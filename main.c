@@ -1,3 +1,9 @@
+/*
+nano filename.c
+cc -pthread filename.c -o filename
+./filename
+*/
+
 //P&C(T&S)
 /*
 define BUFFER_SIZE
@@ -427,3 +433,4 @@ int main() {
     return 0;
 }
 */
+

@@ -1,3 +1,4 @@
+//P&C(T&S)
 /*
 #include <iostream>
 #include <pthread.h>
@@ -59,6 +60,7 @@ int main(){
 }
 */
 
+//P&C(T&M)
 /*
 #include <iostream>
 #include <pthread.h>
@@ -124,6 +126,7 @@ int main(){
 }
 */
 
+//R&W(T&S)
 /*
 #include <iostream>
 #include <pthread.h>
@@ -193,6 +196,7 @@ int main() {
 }
 */
 
+//R&W(T&M)
 /*
 #include <iostream>
 #include <pthread.h>
@@ -272,6 +276,7 @@ int main() {
 }
 */
 
+//FCFS
 /*
 #include <iostream>
 using namespace std;
@@ -279,115 +284,68 @@ int main() {
     int n;
     cout << "Enter number of processes: ";
     cin >> n;
-    int pid[n], bt[n], ft[n], tat[n], wt[n];
+    int pid[n], at[n], bt[n], ft[n], tat[n], wt[n];
     for (int i = 0; i < n; i++) {
-        cout << "Enter Process ID and Burst Time: ";
-        cin >> pid[i] >> bt[i];
-    }
-    ft[0] = bt[0];
-    for (int i = 1; i < n; i++)
-        ft[i] = ft[i - 1] + bt[i];
-
-    for (int i = 0; i < n; i++) {
-        tat[i] = ft[i];
-        wt[i] = tat[i] - bt[i];
-    }
-    cout << "\nPID\tBT\tFT\tTAT\tWT\n";
-    for (int i = 0; i < n; i++) {
-        cout << pid[i] << "\t" << bt[i] << "\t"
-             << ft[i] << "\t" << tat[i] << "\t"
-             << wt[i] << endl;
-    }
-    cout << "\nGantt Chart:\n";
-    cout << " ";
-    for (int i = 0; i < n; i++) {
-        cout << "|";
-        for (int j = 0; j < bt[i]; j++)
-            cout << "-";
-    }
-    cout << "|\n";
-    cout << " ";
-    for (int i = 0; i < n; i++) {
-        cout << "|P" << pid[i];
-        for (int j = 0; j < bt[i] - 2; j++)
-            cout << " ";
-    }
-    cout << "|\n";
-    cout << " ";
-    for (int i = 0; i < n; i++) {
-        cout << "|";
-        for (int j = 0; j < bt[i]; j++)
-            cout << "-";
-    }
-    cout << "|\n";
-    cout << " 0";
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < bt[i]; j++)
-            cout << " ";
-        cout << ft[i];
-    }
-    return 0;
-}
-*/
-
-/*
-#include <iostream>
-using namespace std;
-int main() {
-    int n;
-    cout << "Enter number of processes: ";
-    cin >> n;
-    int pid[n], bt[n], ft[n], tat[n], wt[n];
-    for (int i = 0; i < n; i++) {
-        cout << "Enter Process ID and Burst Time: ";
-        cin >> pid[i] >> bt[i];
+        pid[i] = i + 1;
+        cout << "Enter Arrival Time and Burst Time for P" << pid[i] << ": ";
+        cin >> at[i] >> bt[i];
     }
     for (int i = 0; i < n - 1; i++) {
         for (int j = i + 1; j < n; j++) {
-            if (bt[j] < bt[i]) {
+            if (at[i] > at[j]) {
+                swap(at[i], at[j]);
                 swap(bt[i], bt[j]);
                 swap(pid[i], pid[j]);
             }
         }
     }
-    ft[0] = bt[0];
-    for (int i = 1; i < n; i++)
-        ft[i] = ft[i - 1] + bt[i];
-
+    ft[0] = at[0] + bt[0];
+    for (int i = 1; i < n; i++) {
+        if (ft[i - 1] > at[i])
+            ft[i] = ft[i - 1] + bt[i];
+        else
+            ft[i] = at[i] + bt[i];
+    }
     for (int i = 0; i < n; i++) {
-        tat[i] = ft[i];
+        tat[i] = ft[i] - at[i];
         wt[i] = tat[i] - bt[i];
     }
-    cout << "\nPID\tBT\tFT\tTAT\tWT\n";
+    cout << "\nPID\tAT\tBT\tFT\tTAT\tWT\n";
     for (int i = 0; i < n; i++) {
-        cout << pid[i] << "\t" << bt[i] << "\t"
-             << ft[i] << "\t" << tat[i] << "\t"
-             << wt[i] << endl;
+        cout << "P" << pid[i] << "\t" << at[i] << "\t"
+             << bt[i] << "\t" << ft[i] << "\t"
+             << tat[i] << "\t" << wt[i] << endl;
     }
     cout << "\nGantt Chart:\n ";
     for (int i = 0; i < n; i++) {
         cout << "|";
-        for (int j = 0; j < bt[i]; j++) cout << "-";
+        for (int j = 0; j < bt[i]; j++)
+            cout << "-";
     }
     cout << "|\n ";
     for (int i = 0; i < n; i++) {
         cout << "|P" << pid[i];
-        for (int j = 0; j < bt[i] - 2; j++) cout << " ";
+        for (int j = 0; j < bt[i] - 2; j++)
+            cout << " ";
     }
     cout << "|\n ";
     for (int i = 0; i < n; i++) {
         cout << "|";
-        for (int j = 0; j < bt[i]; j++) cout << "-";
+        for (int j = 0; j < bt[i]; j++)
+            cout << "-";
     }
-    cout << "|\n 0";
+    cout << "|\n";
+    cout << at[0];
     for (int i = 0; i < n; i++) {
-        for (int j = 0; j < bt[i]; j++) cout << " ";
+        for (int j = 0; j < bt[i]; j++)
+            cout << " ";
         cout << ft[i];
     }
     return 0;
 }
 */
 
+//SJF(NP)
 /*
 #include <iostream>
 using namespace std;
@@ -395,25 +353,107 @@ int main() {
     int n;
     cout << "Enter number of processes: ";
     cin >> n;
-    int pid[n], bt[n], rt[n], ft[n], tat[n], wt[n];
+    int pid[n], at[n], bt[n], ft[n], tat[n], wt[n];
+    bool done[n] = {0};
     for (int i = 0; i < n; i++) {
-        cout << "Enter Process ID and Burst Time: ";
-        cin >> pid[i] >> bt[i];
+        pid[i] = i + 1;
+        cout << "Enter Arrival Time and Burst Time for P" << pid[i] << ": ";
+        cin >> at[i] >> bt[i];
+    }
+    int time = 0, completed = 0;
+    int order[n], idx = 0;
+    while (completed < n) {
+        int minBT = 1e9;
+        int sel = -1;
+        for (int i = 0; i < n; i++) {
+            if (!done[i] && at[i] <= time && bt[i] < minBT) {
+                minBT = bt[i];
+                sel = i;
+            }
+        }
+        if (sel == -1) {
+            time++;
+            continue;
+        }
+        time += bt[sel];
+        ft[sel] = time;
+        done[sel] = true;
+        order[idx++] = sel;
+        completed++;
+    }
+    for (int i = 0; i < n; i++) {
+        tat[i] = ft[i] - at[i];
+        wt[i] = tat[i] - bt[i];
+    }
+    cout << "\nPID\tAT\tBT\tFT\tTAT\tWT\n";
+    for (int i = 0; i < n; i++) {
+        cout << "P" << pid[i] << "\t" << at[i] << "\t"
+             << bt[i] << "\t" << ft[i] << "\t"
+             << tat[i] << "\t" << wt[i] << endl;
+    }
+    cout << "\nGantt Chart:\n ";
+    for (int i = 0; i < n; i++) {
+        cout << "|";
+        for (int j = 0; j < bt[order[i]]; j++)
+            cout << "-";
+    }
+    cout << "|\n ";
+    for (int i = 0; i < n; i++) {
+        cout << "|P" << pid[order[i]];
+        for (int j = 0; j < bt[order[i]] - 2; j++)
+            cout << " ";
+    }
+    cout << "|\n ";
+    for (int i = 0; i < n; i++) {
+        cout << "|";
+        for (int j = 0; j < bt[order[i]]; j++)
+            cout << "-";
+    }
+    cout << "|\n";
+    cout << at[order[0]];
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < bt[order[i]]; j++)
+            cout << " ";
+        cout << ft[order[i]];
+    }
+    return 0;
+}
+*/
+
+//SJF(P)
+/*
+#include <iostream>
+using namespace std;
+int main() {
+    int n;
+    cout << "Enter number of processes: ";
+    cin >> n;
+    int pid[n], at[n], bt[n], rt[n], ft[n], tat[n], wt[n];
+    bool done[n] = {0};
+    for (int i = 0; i < n; i++) {
+        pid[i] = i + 1;
+        cout << "Enter Arrival Time and Burst Time for P" << pid[i] << ": ";
+        cin >> at[i] >> bt[i];
         rt[i] = bt[i];
         ft[i] = 0;
     }
     int time = 0, completed = 0;
-    int ganttPID[1000], g = 0;
+    int gantt[1000], g = 0;
     while (completed < n) {
         int idx = -1;
         int minRT = 1e9;
         for (int i = 0; i < n; i++) {
-            if (rt[i] > 0 && rt[i] < minRT) {
+            if (at[i] <= time && rt[i] > 0 && rt[i] < minRT) {
                 minRT = rt[i];
                 idx = i;
             }
         }
-        ganttPID[g++] = pid[idx];
+        if (idx == -1) {
+            gantt[g++] = -1;
+            time++;
+            continue;
+        }
+        gantt[g++] = pid[idx];
         rt[idx]--;
         time++;
         if (rt[idx] == 0) {
@@ -422,19 +462,22 @@ int main() {
         }
     }
     for (int i = 0; i < n; i++) {
-        tat[i] = ft[i];
+        tat[i] = ft[i] - at[i];
         wt[i] = tat[i] - bt[i];
     }
-    cout << "\nPID\tBT\tFT\tTAT\tWT\n";
+    cout << "\nPID\tAT\tBT\tFT\tTAT\tWT\n";
     for (int i = 0; i < n; i++) {
-        cout << pid[i] << "\t" << bt[i] << "\t"
-             << ft[i] << "\t" << tat[i] << "\t"
-             << wt[i] << endl;
+        cout << "P" << pid[i] << "\t" << at[i] << "\t"
+             << bt[i] << "\t" << ft[i] << "\t"
+             << tat[i] << "\t" << wt[i] << endl;
     }
     cout << "\nGantt Chart:\n ";
     for (int i = 0; i < g; i++) cout << "|--";
     cout << "|\n ";
-    for (int i = 0; i < g; i++) cout << "|P" << ganttPID[i];
+    for (int i = 0; i < g; i++) {
+        if (gantt[i] == -1) cout << "|ID";
+        else cout << "|P" << gantt[i];
+    }
     cout << "|\n ";
     for (int i = 0; i < g; i++) cout << "|--";
     cout << "|\n 0";
@@ -443,6 +486,7 @@ int main() {
 }
 */
 
+//RR
 /*
 #include <iostream>
 using namespace std;
@@ -452,39 +496,45 @@ int main() {
     cin >> n;
     cout << "Enter Time Quantum: ";
     cin >> tq;
-    int pid[n], bt[n], rt[n], ft[n];
+    int pid[n], at[n], bt[n], rt[n], ft[n];
+    bool done[n] = {0};
     for (int i = 0; i < n; i++) {
-        cout << "Enter Process ID and Burst Time: ";
-        cin >> pid[i] >> bt[i];
+        pid[i] = i + 1;
+        cout << "Enter Arrival Time and Burst Time for P" << pid[i] << ": ";
+        cin >> at[i] >> bt[i];
         rt[i] = bt[i];
         ft[i] = 0;
     }
-    int time = 0;
-    int ganttPid[100], ganttTime[100], g = 0;
-    while (true) {
-        bool done = true;
+    int time = 0, completed = 0;
+    int ganttPid[200], ganttTime[200], g = 0;
+    while (completed < n) {
+        bool executed = false;
         for (int i = 0; i < n; i++) {
-            if (rt[i] > 0) {
-                done = false;
+            if (at[i] <= time && rt[i] > 0) {
+                executed = true;
                 int exec = min(tq, rt[i]);
                 ganttPid[g] = pid[i];
                 ganttTime[g] = exec;
                 g++;
                 rt[i] -= exec;
                 time += exec;
-                if (rt[i] == 0)
+                if (rt[i] == 0) {
                     ft[i] = time;
+                    completed++;
+                }
             }
         }
-        if (done) break;
+        if (!executed) {
+            time++;
+        }
     }
-    cout << "\nPID\tBT\tFT\tTAT\tWT\n";
+    cout << "\nPID\tAT\tBT\tFT\tTAT\tWT\n";
     for (int i = 0; i < n; i++) {
-        int tat = ft[i];
+        int tat = ft[i] - at[i];
         int wt = tat - bt[i];
-        cout << pid[i] << "\t" << bt[i] << "\t"
-             << ft[i] << "\t" << tat << "\t"
-             << wt << endl;
+        cout << "P" << pid[i] << "\t" << at[i] << "\t"
+             << bt[i] << "\t" << ft[i] << "\t"
+             << tat << "\t" << wt << endl;
     }
     cout << "\nGantt Chart:\n ";
     for (int i = 0; i < g; i++) {
@@ -494,7 +544,7 @@ int main() {
     cout << "|\n ";
     for (int i = 0; i < g; i++) {
         cout << "|P" << ganttPid[i];
-        for (int j = 0; j < ganttTime[i] - 2; j++) cout << " ";
+        for (int j = 0; j < ganttTime[i] - 1; j++) cout << " ";
     }
     cout << "|\n ";
     for (int i = 0; i < g; i++) {
@@ -512,6 +562,7 @@ int main() {
 }
 */
 
+//PRIO(NP)
 /*
 #include <iostream>
 using namespace std;
@@ -519,57 +570,77 @@ int main() {
     int n;
     cout << "Enter number of processes: ";
     cin >> n;
-    int pid[n], bt[n], pr[n], ft[n], tat[n], wt[n];
+    int pid[n], at[n], bt[n], pr[n], ft[n], tat[n], wt[n];
+    bool done[n] = {0};
     for (int i = 0; i < n; i++) {
-        cout << "Enter Process ID, Burst Time, Priority: ";
-        cin >> pid[i] >> bt[i] >> pr[i];
+        pid[i] = i + 1;
+        cout << "Enter Arrival Time, Burst Time, Priority for P" << pid[i] << ": ";
+        cin >> at[i] >> bt[i] >> pr[i];
+        ft[i] = 0;
     }
-    for (int i = 0; i < n - 1; i++) {
-        for (int j = i + 1; j < n; j++) {
-            if (pr[j] < pr[i]) {
-                swap(pr[i], pr[j]);
-                swap(bt[i], bt[j]);
-                swap(pid[i], pid[j]);
+    int time = 0, completed = 0;
+    int ganttPid[n], ganttBt[n], g = 0;
+    while (completed < n) {
+        int idx = -1;
+        int bestPr = 1e9;
+        for (int i = 0; i < n; i++) {
+            if (!done[i] && at[i] <= time) {
+                if (pr[i] < bestPr) {
+                    bestPr = pr[i];
+                    idx = i;
+                }
             }
         }
+        if (idx == -1) {
+            time++;
+            continue;
+        }
+        ganttPid[g] = pid[idx];
+        ganttBt[g] = bt[idx];
+        g++;
+        time += bt[idx];
+        ft[idx] = time;
+        done[idx] = true;
+        completed++;
     }
-    ft[0] = bt[0];
-    for (int i = 1; i < n; i++)
-        ft[i] = ft[i - 1] + bt[i];
     for (int i = 0; i < n; i++) {
-        tat[i] = ft[i];
+        tat[i] = ft[i] - at[i];
         wt[i] = tat[i] - bt[i];
     }
-    cout << "\nPID\tBT\tPR\tFT\tTAT\tWT\n";
+    cout << "\nPID\tAT\tBT\tPR\tFT\tTAT\tWT\n";
     for (int i = 0; i < n; i++) {
-        cout << pid[i] << "\t" << bt[i] << "\t"
-             << pr[i] << "\t" << ft[i] << "\t"
-             << tat[i] << "\t" << wt[i] << endl;
+        cout << "P" << pid[i] << "\t" << at[i] << "\t"
+             << bt[i] << "\t" << pr[i] << "\t"
+             << ft[i] << "\t" << tat[i] << "\t"
+             << wt[i] << endl;
     }
     cout << "\nGantt Chart:\n ";
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < g; i++) {
         cout << "|";
-        for (int j = 0; j < bt[i]; j++) cout << "-";
+        for (int j = 0; j < ganttBt[i]; j++) cout << "-";
     }
     cout << "|\n ";
-    for (int i = 0; i < n; i++) {
-        cout << "|P" << pid[i];
-        for (int j = 0; j < bt[i] - 2; j++) cout << " ";
+    for (int i = 0; i < g; i++) {
+        cout << "|P" << ganttPid[i];
+        for (int j = 0; j < ganttBt[i] - 2; j++) cout << " ";
     }
     cout << "|\n ";
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < g; i++) {
         cout << "|";
-        for (int j = 0; j < bt[i]; j++) cout << "-";
+        for (int j = 0; j < ganttBt[i]; j++) cout << "-";
     }
     cout << "|\n 0";
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < bt[i]; j++) cout << " ";
-        cout << ft[i];
+    int t = 0;
+    for (int i = 0; i < g; i++) {
+        for (int j = 0; j < ganttBt[i]; j++) cout << " ";
+        t += ganttBt[i];
+        cout << t;
     }
     return 0;
 }
 */
 
+//PRIO(P)
 /*
 #include <iostream>
 using namespace std;
@@ -577,10 +648,11 @@ int main() {
     int n;
     cout << "Enter number of processes: ";
     cin >> n;
-    int pid[n], bt[n], pr[n], rt[n], ft[n], tat[n], wt[n];
+    int pid[n], at[n], bt[n], pr[n], rt[n], ft[n], tat[n], wt[n];
     for (int i = 0; i < n; i++) {
-        cout << "Enter Process ID, Burst Time, Priority: ";
-        cin >> pid[i] >> bt[i] >> pr[i];
+        pid[i] = i + 1;
+        cout << "Enter Arrival Time, Burst Time, Priority for P" << pid[i] << ": ";
+        cin >> at[i] >> bt[i] >> pr[i];
         rt[i] = bt[i];
         ft[i] = 0;
     }
@@ -590,10 +662,17 @@ int main() {
         int idx = -1;
         int bestPr = 1e9;
         for (int i = 0; i < n; i++) {
-            if (rt[i] > 0 && pr[i] < bestPr) {
-                bestPr = pr[i];
-                idx = i;
+            if (at[i] <= time && rt[i] > 0) {
+                if (pr[i] < bestPr) {
+                    bestPr = pr[i];
+                    idx = i;
+                }
             }
+        }
+        if (idx == -1) {
+            ganttPID[g++] = -1;
+            time++;
+            continue;
         }
         ganttPID[g++] = pid[idx];
         rt[idx]--;
@@ -604,19 +683,23 @@ int main() {
         }
     }
     for (int i = 0; i < n; i++) {
-        tat[i] = ft[i];
+        tat[i] = ft[i] - at[i];
         wt[i] = tat[i] - bt[i];
     }
-    cout << "\nPID\tBT\tPR\tFT\tTAT\tWT\n";
+    cout << "\nPID\tAT\tBT\tPR\tFT\tTAT\tWT\n";
     for (int i = 0; i < n; i++) {
-        cout << pid[i] << "\t" << bt[i] << "\t"
-             << pr[i] << "\t" << ft[i] << "\t"
-             << tat[i] << "\t" << wt[i] << endl;
+        cout << "P" << pid[i] << "\t" << at[i] << "\t"
+             << bt[i] << "\t" << pr[i] << "\t"
+             << ft[i] << "\t" << tat[i] << "\t"
+             << wt[i] << endl;
     }
     cout << "\nGantt Chart:\n ";
     for (int i = 0; i < g; i++) cout << "|--";
     cout << "|\n ";
-    for (int i = 0; i < g; i++) cout << "|P" << ganttPID[i];
+    for (int i = 0; i < g; i++) {
+        if (ganttPID[i] == -1) cout << "|ID";
+        else cout << "|P" << ganttPID[i];
+    }
     cout << "|\n ";
     for (int i = 0; i < g; i++) cout << "|--";
     cout << "|\n 0";
@@ -625,6 +708,7 @@ int main() {
 }
 */
 
+//BANK(V1)
 /*
 #include <iostream>
 using namespace std;
@@ -688,6 +772,7 @@ int main() {
 }
 */
 
+//BANK(V2)
 /*
 #include <iostream>
 using namespace std;
@@ -748,6 +833,7 @@ int main() {
 }
 */
 
+//LRU
 /*
 #include <iostream>
 using namespace std;
@@ -808,6 +894,7 @@ int main() {
 }
 */
 
+//FIFO
 /*
 #include <iostream>
 using namespace std;
@@ -860,6 +947,7 @@ int main() {
 }
 */
 
+//OPT
 /*
 #include <iostream>
 using namespace std;
@@ -925,6 +1013,7 @@ int main() {
 }
 */
 
+//EDF
 /*
 #include <iostream>
 using namespace std;
@@ -977,6 +1066,7 @@ int main() {
 }
 */
 
+//RMS
 /*
 #include <iostream>
 using namespace std;
@@ -1026,6 +1116,7 @@ int main() {
 }
 */
 
+//LLF
 /*
 #include <iostream>
 using namespace std;

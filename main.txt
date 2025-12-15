@@ -1,0 +1,560 @@
+//P&C(T&S)
+/*
+initialize buffer of size N
+initialize in = 0, out = 0
+initialize semaphore empty = N
+initialize semaphore full = 0
+initialize mutex m
+Producer:
+    while true:
+        produce item
+        wait(empty)
+        lock(m)
+            buffer[in] = item
+            in = (in + 1) mod N
+        unlock(m)
+        signal(full)
+Consumer:
+    while true:
+        wait(full)
+        lock(m)
+            item = buffer[out]
+            out = (out + 1) mod N
+        unlock(m)
+        signal(empty)
+        consume item
+Main:
+    create producer threads
+    create consumer threads
+    wait for threads
+*/
+
+//P&C(T&M)
+/*
+initialize buffer of size N
+initialize in = 0, out = 0, count = 0
+initialize mutex m
+initialize condition notFull
+initialize condition notEmpty
+Producer:
+    while true:
+        produce item
+        lock(m)
+            while count == N:
+                wait(notFull, m)
+            buffer[in] = item
+            in = (in + 1) mod N
+            count = count + 1
+            signal(notEmpty)
+        unlock(m)
+Consumer:
+    while true:
+        lock(m)
+            while count == 0:
+                wait(notEmpty, m)
+            item = buffer[out]
+            out = (out + 1) mod N
+            count = count - 1
+            signal(notFull)
+        unlock(m)
+        consume item
+Main:
+    create producer threads
+    create consumer threads
+    wait for threads
+*/
+
+//R&W(T&S)
+/*
+initialize shared clock (hh, mm, ss)
+initialize readCount = 0
+initialize semaphore mutex = 1
+initialize semaphore writeLock = 1
+Reader:
+    while true:
+        wait(mutex)
+            readCount = readCount + 1
+            if readCount == 1:
+                wait(writeLock)
+        signal(mutex)
+        read clock time
+        wait(mutex)
+            readCount = readCount - 1
+            if readCount == 0:
+                signal(writeLock)
+        signal(mutex)
+Writer:
+    while true:
+        wait(writeLock)
+            update clock time
+        signal(writeLock)
+Main:
+    create reader threads
+    create writer threads
+    wait for threads
+*/
+
+//R&W(T&M)
+/*
+initialize shared clock (hh, mm, ss)
+initialize readCount = 0
+initialize isWriting = false
+initialize mutex
+initialize condition canRead
+initialize condition canWrite
+Reader:
+    while true:
+        lock(mutex)
+            while isWriting == true:
+                wait(canRead, mutex)
+            readCount = readCount + 1
+        unlock(mutex)
+        read clock time
+        lock(mutex)
+            readCount = readCount - 1
+            if readCount == 0:
+                signal(canWrite)
+        unlock(mutex)
+Writer:
+    while true:
+        lock(mutex)
+            while readCount > 0 OR isWriting == true:
+                wait(canWrite, mutex)
+            isWriting = true
+        unlock(mutex)
+        update clock time
+        lock(mutex)
+            isWriting = false
+            broadcast(canRead)
+            signal(canWrite)
+        unlock(mutex)
+Main:
+    create reader threads
+    create writer threads
+    wait for all threads
+*/
+
+//FCFS
+/*
+input number of processes n
+for each process i:
+    assign pid = i + 1
+    input arrival time AT[i]
+    input burst time BT[i]
+sort all processes based on AT (ascending)
+finish_time[0] = AT[0] + BT[0]
+for i from 1 to n-1:
+    if finish_time[i-1] > AT[i]:
+        finish_time[i] = finish_time[i-1] + BT[i]
+    else:
+        finish_time[i] = AT[i] + BT[i]
+for each process i:
+    turnaround_time = finish_time - arrival_time
+    waiting_time = turnaround_time - burst_time
+display table
+draw gantt chart using BT and FT
+*/
+
+//SJF(NP)
+/*
+input n
+for each process i:
+    pid = i + 1
+    input arrival_time, burst_time
+    mark process as not completed
+time = 0
+completed = 0
+while completed < n:
+    select process with:
+        arrival_time <= time
+        minimum burst_time
+        not completed
+    if no process found:
+        time++
+        continue
+    execute selected process fully
+    update finish time
+    mark process completed
+    record execution order
+for each process:
+    turnaround_time = finish_time - arrival_time
+    waiting_time = turnaround_time - burst_time
+print table
+draw gantt chart using execution order
+*/
+
+//SJF(P)
+/*
+input n
+for each process i:
+    pid = i + 1
+    input arrival_time, burst_time
+    remaining_time = burst_time
+    mark process incomplete
+time = 0
+completed = 0
+while completed < n:
+    select process with:
+        arrival_time <= time
+        smallest remaining_time
+        remaining_time > 0
+    if no process found:
+        record IDLE in gantt
+        time++
+        continue
+    execute selected process for 1 unit
+    record pid in gantt
+    remaining_time--
+    time++
+    if remaining_time becomes 0:
+        finish_time = time
+        completed++
+for each process:
+    turnaround_time = finish_time - arrival_time
+    waiting_time = turnaround_time - burst_time
+print table
+draw gantt chart using time units
+*/
+
+//RR
+/*
+input n, time_quantum
+for each process i:
+    pid = i + 1
+    input arrival_time, burst_time
+    remaining_time = burst_time
+time = 0
+completed = 0
+while completed < n:
+    for each process i:
+        if arrival_time <= time AND remaining_time > 0:
+            execute for min(time_quantum, remaining_time)
+            record in gantt chart
+            update time
+            decrease remaining_time
+
+            if remaining_time becomes 0:
+                finish_time = time
+                completed++
+    if no process executed in this round:
+        time++
+for each process:
+    turnaround_time = finish_time - arrival_time
+    waiting_time = turnaround_time - burst_time
+print table
+draw gantt chart
+*/
+
+//PRIO(NP)
+/*
+input n
+for each process i:
+    pid = i + 1
+    input arrival_time, burst_time, priority
+    mark process as not done
+time = 0
+completed = 0
+while completed < n:
+    select process with:
+        arrival_time <= time
+        not completed
+        lowest priority value
+    if no process found:
+        time++
+        continue
+    execute selected process fully
+    record in gantt chart
+    update finish time
+    mark process completed
+for each process:
+    turnaround_time = finish_time - arrival_time
+    waiting_time = turnaround_time - burst_time
+print table
+draw gantt chart
+*/
+
+//PRIO(P)
+/*
+input n
+for each process i:
+    pid = i + 1
+    input arrival_time, burst_time, priority
+    remaining_time = burst_time
+    finish_time = 0
+time = 0
+completed = 0
+while completed < n:
+    select process with:
+        arrival_time <= time
+        remaining_time > 0
+        lowest priority value
+    if no process found:
+        record IDLE in gantt chart
+        time++
+        continue
+    execute selected process for 1 unit
+    record pid in gantt chart
+    remaining_time--
+    time++
+    if remaining_time == 0:
+        finish_time = time
+        completed++
+for each process:
+    turnaround_time = finish_time - arrival_time
+    waiting_time = turnaround_time - burst_time
+print table
+draw gantt chart
+*/
+
+//BANK(V1)
+/*
+input n, m
+for each resource type j:
+    input existing[j]
+for each process i:
+    for each resource j:
+        input allocation[i][j]
+for each process i:
+    for each resource j:
+        input need[i][j]
+for each resource j:
+    available[j] = existing[j] - sum of allocation[i][j] for all i
+for each process i:
+    finish[i] = false
+count = 0
+while count < n:
+    found = false
+    for each process i:
+        if finish[i] == false:
+            if need[i][j] <= available[j] for all j:
+                for each resource j:
+                    available[j] = available[j] + allocation[i][j]
+
+                safe_sequence[count] = i
+                finish[i] = true
+                count++
+                found = true
+    if found == false:
+        break
+if count == n:
+    system is in SAFE state
+    print safe sequence
+else:
+    system is NOT SAFE
+*/
+
+//BANK(V2)
+/*
+input n, m
+for each process i:
+    for each resource j:
+        input allocation[i][j]
+for each process i:
+    for each resource j:
+        input max[i][j]
+for each resource j:
+    input available[j]
+for each process i:
+    for each resource j:
+        need[i][j] = max[i][j] - allocation[i][j]
+for each process i:
+    finish[i] = false
+count = 0
+while count < n:
+    found = false
+    for each process i:
+        if finish[i] == false:
+            if need[i][j] <= available[j] for all j:
+                for each resource j:
+                    available[j] = available[j] + allocation[i][j]
+
+                safe_sequence[count] = i
+                finish[i] = true
+                count++
+                found = true
+    if found == false:
+        break
+if count == n:
+    system is in SAFE state
+    print safe sequence
+else:
+    system is NOT SAFE
+*/
+
+//LRU
+/*
+input n
+input page_reference_string[0 … n-1]
+input f   // number of frames
+for each frame i:
+    frames[i] = empty
+    time[i] = 0
+current_time = 0
+for each page i in page_reference_string:
+    hit = false
+    for each frame j:
+        if frames[j] == page:
+            hit = true
+            current_time++
+            time[j] = current_time
+            mark result as HIT
+            break
+    if hit == false:
+        find frame k with minimum time value
+        frames[k] = page
+        current_time++
+        time[k] = current_time
+        mark result as PAGE FAULT
+    store current frame contents in table
+print page reference string
+print frame table
+print hit/page-fault result
+*/
+
+//FIFO
+/*
+input n
+input page_reference_string[0 … n-1]
+input f   // number of frames
+for each frame i:
+    frames[i] = empty
+idx = 0   // points to next frame to replace
+for each page i in page_reference_string:
+    hit = false
+    for each frame j:
+        if frames[j] == page:
+            hit = true
+            mark result as HIT
+            break
+    if hit == false:
+        frames[idx] = page
+        idx = (idx + 1) mod f
+        mark result as PAGE FAULT
+    store current frame contents in table
+print page reference string
+print frame table
+print hit/page-fault result
+*/
+
+//OPT
+/*
+input n
+input page_reference_string[0 … n-1]
+input f   // number of frames
+for each frame i:
+    frames[i] = empty
+for each page i in page_reference_string:
+    hit = false
+    for each frame j:
+        if frames[j] == page:
+            hit = true
+            mark result as HIT
+            break
+    if hit == false:
+        // find frame to replace
+        idx = -1
+        farthest = i + 1
+        for each frame j:
+            for k = i+1 to n-1:
+                if frames[j] == page_reference_string[k]:
+                    break
+            if k reached end of string:
+                idx = j
+                break
+            if k > farthest:
+                farthest = k
+                idx = j
+        if idx == -1:
+            idx = 0
+        frames[idx] = page
+        mark result as PAGE FAULT
+    store current frame contents in table
+print page reference string
+print frame table
+print hit/page-fault result
+*/
+
+//EDF
+/*
+input n  // number of tasks
+for each task i:
+    input burst_time, period, relative_deadline
+    pid[i] = i+1
+    rem[i] = 0           // remaining execution time
+    next[i] = 0          // next release time
+    absDL[i] = 0         // absolute deadline
+compute hyperperiod = LCM of all periods
+for time t = 0 to hyperperiod-1:
+    for each task i:
+        if t == next[i]:
+            rem[i] = burst_time[i]
+            absDL[i] = t + relative_deadline[i]
+            next[i] += period[i]
+    sel = -1
+    for each task i:
+        if rem[i] > 0:
+            if sel == -1 or absDL[i] < absDL[sel]:
+                sel = i
+    if sel == -1:
+        print t, "IDLE"
+    else:
+        print t, "T" + pid[sel]
+        rem[sel]--
+*/
+
+//RMS
+/*
+input n  // number of tasks
+for each task i:
+    input burst_time, period
+    pid[i] = i+1
+    rem[i] = 0        // remaining execution time
+    next[i] = 0       // next release time
+compute hyperperiod = LCM of all periods
+for time t = 0 to hyperperiod-1:
+    for each task i:
+        if t == next[i]:
+            rem[i] = burst_time[i]
+            next[i] += period[i]
+    sel = -1
+    for each task i:
+        if rem[i] > 0:
+            if sel == -1 or period[i] < period[sel]:
+                sel = i
+    if sel == -1:
+        print t, "IDLE"
+    else:
+        print t, "T" + pid[sel]
+        rem[sel]--
+*/
+
+//LLF
+/*
+input n  // number of tasks
+for each task i:
+    input burst_time, period, deadline
+    pid[i] = i+1
+    rem[i] = 0        // remaining execution time
+    next[i] = 0       // next release time
+    absDL[i] = 0      // absolute deadline
+compute hyperperiod = LCM of all periods
+for time t = 0 to hyperperiod-1:
+    for each task i:
+        if t == next[i]:                // task released
+            rem[i] = burst_time[i]
+            absDL[i] = t + deadline[i]
+            next[i] += period[i]
+    sel = -1
+    minLax = infinity
+    for each task i:
+        if rem[i] > 0:
+            laxity = absDL[i] - rem[i] - t
+            if laxity < minLax:        // select task with least laxity
+                minLax = laxity
+                sel = i
+    if sel == -1:
+        print t, "IDLE"
+    else:
+        print t, "T" + pid[sel]
+        rem[sel]--
+*/

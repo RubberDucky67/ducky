@@ -218,30 +218,36 @@ draw gantt chart using time units
 
 //RR
 /*
-input n, time_quantum
+input n
+input time_quantum
 for each process i:
-    pid = i + 1
     input arrival_time, burst_time
     remaining_time = burst_time
+    mark process as not completed
+initialize ready_queue as empty
 time = 0
 completed = 0
+add all processes with arrival_time = 0 to ready_queue
 while completed < n:
-    for each process i:
-        if arrival_time <= time AND remaining_time > 0:
-            execute for min(time_quantum, remaining_time)
-            record in gantt chart
-            update time
-            decrease remaining_time
-
-            if remaining_time becomes 0:
-                finish_time = time
-                completed++
-    if no process executed in this round:
-        time++
+    if ready_queue is empty:
+        time = time + 1
+        add newly arrived processes to ready_queue
+        continue
+    p = dequeue from ready_queue
+    execute p for min(time_quantum, remaining_time)
+    record execution in gantt chart
+    time = time + executed_time
+    remaining_time = remaining_time - executed_time
+    add all newly arrived processes to ready_queue
+    if remaining_time > 0:
+        enqueue p back into ready_queue
+    else:
+        finish_time[p] = time
+        completed = completed + 1
 for each process:
     turnaround_time = finish_time - arrival_time
     waiting_time = turnaround_time - burst_time
-print table
+print process table
 draw gantt chart
 */
 

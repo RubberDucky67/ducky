@@ -489,6 +489,7 @@ int main() {
 //RR
 /*
 #include <iostream>
+#include <queue>
 using namespace std;
 int main() {
     int n, tq;
@@ -497,7 +498,7 @@ int main() {
     cout << "Enter Time Quantum: ";
     cin >> tq;
     int pid[n], at[n], bt[n], rt[n], ft[n];
-    bool done[n] = {0};
+    bool inQueue[n] = {false};
     for (int i = 0; i < n; i++) {
         pid[i] = i + 1;
         cout << "Enter Arrival Time and Burst Time for P" << pid[i] << ": ";
@@ -505,27 +506,45 @@ int main() {
         rt[i] = bt[i];
         ft[i] = 0;
     }
+    queue<int> q;
     int time = 0, completed = 0;
     int ganttPid[200], ganttTime[200], g = 0;
+    for (int i = 0; i < n; i++) {
+        if (at[i] == 0) {
+            q.push(i);
+            inQueue[i] = true;
+        }
+    }
     while (completed < n) {
-        bool executed = false;
-        for (int i = 0; i < n; i++) {
-            if (at[i] <= time && rt[i] > 0) {
-                executed = true;
-                int exec = min(tq, rt[i]);
-                ganttPid[g] = pid[i];
-                ganttTime[g] = exec;
-                g++;
-                rt[i] -= exec;
-                time += exec;
-                if (rt[i] == 0) {
-                    ft[i] = time;
-                    completed++;
+        if (q.empty()) {
+            time++;
+            for (int i = 0; i < n; i++) {
+                if (!inQueue[i] && at[i] <= time && rt[i] > 0) {
+                    q.push(i);
+                    inQueue[i] = true;
                 }
             }
+            continue;
         }
-        if (!executed) {
-            time++;
+        int i = q.front();
+        q.pop();
+        int exec = min(tq, rt[i]);
+        ganttPid[g] = pid[i];
+        ganttTime[g] = exec;
+        g++;
+        time += exec;
+        rt[i] -= exec;
+        for (int j = 0; j < n; j++) {
+            if (!inQueue[j] && at[j] <= time && rt[j] > 0) {
+                q.push(j);
+                inQueue[j] = true;
+            }
+        }
+        if (rt[i] > 0) {
+            q.push(i);
+        } else {
+            ft[i] = time;
+            completed++;
         }
     }
     cout << "\nPID\tAT\tBT\tFT\tTAT\tWT\n";

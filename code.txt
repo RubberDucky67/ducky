@@ -1,0 +1,281 @@
+Design a Lex program to identify and print integer values, characters from a given input string.
+
+%{
+#include <stdio.h>
+%}
+%%
+[0-9]+ {printf("Saw an Integer: %s\n", yytext);}
+[a-zA-Z]+ {printf("Saw a Character: %s\n", yytext);}
+. { ;}
+%%
+int main(){
+printf("Enter a String: ");
+yylex();
+}
+int yywrap() {return 1;}
+
+Design a Lex program to count the number of vowels and consonants in a given input string.
+
+%{
+#include <stdio.h>
+int v=0, c=0;
+%}
+%%
+[aeiouAEIOU] {v++;}
+[bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ] {c++;}
+. { ;}
+%%
+int main(){
+    printf("Enter a String: ");
+    yylex();
+    printf("\nVowels: %d\n",v);
+    printf("Consonants: %d",c);
+}
+int yywrap() {return 1;}
+
+Implement lexical analyser for subset of C language using LEX. Output in Format: Line-no., Lexeme, token and token value. Implement any one error detection.
+
+%{
+#include <stdio.h>
+int lineno=1, tid=1, err=0;
+%}
+%%
+"int"|"float"|"return" { printf("%-3d %-10s %-10s %-3d\n",lineno,yytext,"KEYWORD",tid++); }
+"main" { printf("%-3d %-10s %-10s %-3d\n",lineno,yytext,"FUNC",tid++); }
+[0-9]+"."[0-9]+ { printf("%-3d %-10s %-10s %-3d\n",lineno,yytext,"FLOAT",tid++); }
+[0-9]+ { printf("%-3d %-10s %-10s %-3d\n",lineno,yytext,"INT",tid++); }
+\"[^\"]*\" { printf("%-3d %-10s %-10s %-3d\n",lineno,yytext,"STRING",tid++); }
+[a-zA-Z_][a-zA-Z0-9_]* { printf("%-3d %-10s %-10s %-3d\n",lineno,yytext,"ID",tid++); }
+[;{}()=,+*/] { printf("%-3d %-10s %-10s %-3d\n",lineno,yytext,"SYM",tid++); }
+\n { lineno++; }
+[ \t]+ ;
+. { printf("%-3d %-10s %-10s  - \n",lineno,yytext,"ERROR"); err=1; }
+%%
+int main(int c,char**v){
+    if(c!=2) return printf("usage: %s file\n",v[0]);
+    yyin=fopen(v[1],"r");
+    printf("Ln  Lexeme     Token      ID\n------------------------------\n");
+    yylex();
+    printf("\n%s\n", err?"INVALID SOURCE FILE":"VALID SOURCE FILE");
+    return 0;
+}
+int yywrap(){return 1;}
+
+Write LEX code to accept input from the user and provide output in the given format. 
+1) Name → FN_LN 
+2) MobileNo → 10 digits 
+3) URL → https://____.com 
+4) Email → ____@____.com 
+5) Date → dd/mm/yyyy 
+6) Time → hh:mm:ss 
+
+%{
+#include <stdio.h>
+%}
+%%
+[A-Z][a-zA-Z]*"_"[A-Z][a-zA-Z]* { printf("Name: %s\n",yytext); }
+[0-9]{10} { printf("Mobile No: %s\n",yytext); }
+"https://"[a-zA-Z0-9]+".com" { printf("URL: %s\n",yytext); }
+[a-zA-Z0-9._%+-]+"@"[a-zA-Z0-9.-]+".com" { printf("Email: %s\n",yytext); }
+[0-3][0-9]"/"[0-1][0-9]"/"[0-9]{4} { printf("Date: %s\n",yytext); }
+[0-2][0-9]":"[0-5][0-9]":"[0-5][0-9] { printf("Time: %s\n",yytext); }
+[ \t\n]+ {}
+[^ \t\n]+ { printf("Invalid Input, Try again!\n"); }
+%%
+int main(){
+    yylex();
+    return 0;
+}
+int yywrap() {return 1;}
+
+Implement lexical analyzer for subset of English language using LEX. Output in Format: Line-no., Lexeme, token and token value. Implement any one error detection.
+
+%{
+#include <stdio.h>
+int lineno=1, tid=1, err=0;
+%}
+%%
+"a"|"an"|"the" { printf("%-3d %-10s %-10s %-3d\n",lineno,yytext,"ART",tid++); }
+"he"|"she"|"it"|"they"|"we"|"you"|"I" { printf("%-3d %-10s %-10s %-3d\n",lineno,yytext,"PRO",tid++); }
+"in"|"on"|"at"|"with"|"by"|"to"|"from" { printf("%-3d %-10s %-10s %-3d\n",lineno,yytext,"PREP",tid++); }
+"and"|"or"|"but"|"because"|"although" { printf("%-3d %-10s %-10s %-3d\n",lineno,yytext,"CONJ",tid++); }
+"go"|"come"|"eat"|"play"|"read"|"write"|"run"|"walk" { printf("%-3d %-10s %-10s %-3d\n",lineno,yytext,"VERB",tid++); }
+[a-zA-Z]+ing { printf("%-3d %-10s %-10s %-3d\n",lineno,yytext,"VERB_ING",tid++); }
+[a-zA-Z]+ed { printf("%-3d %-10s %-10s %-3d\n",lineno,yytext,"VERB_PAST",tid++); }
+[0-9]+(\.[0-9]+)? { printf("%-3d %-10s %-10s %-3d\n",lineno,yytext,"NUM",tid++); }
+[a-zA-Z]+ { printf("%-3d %-10s %-10s %-3d\n",lineno,yytext,"WORD",tid++); }
+[.,!?;:] { printf("%-3d %-10s %-10s %-3d\n",lineno,yytext,"PUNC",tid++); }
+\n { lineno++; }
+[ \t]+ ;
+. { printf("%-3d %-10s %-10s  - \n",lineno,yytext,"ERROR"); err=1; }
+%%
+int main(int c,char**v){
+    if(c!=2) return printf("usage: %s file\n",v[0]);
+    yyin=fopen(v[1],"r");
+    printf("Ln  Lexeme     Token          ID\n----------------------------------\n");
+    yylex();
+    printf("\n%s\n", err?"INVALID ENGLISH INPUT":"VALID ENGLISH INPUT");
+    return 0;
+}
+int yywrap() {return 1;}
+
+Implement parser on single variable expression using LEX and YACC
+
+LEX
+%{
+#include "parser.tab.h"
+%}
+%%
+x { return ID; }
+[0-9]+ { return NUM; }
+[+\-*/()] { return yytext[0]; }
+[ \t\n]+ ;
+. { return yytext[0]; }
+%%
+int yywrap() {return 1;}
+
+YACC
+%{
+#include <stdio.h>
+int yylex(void);
+int yyerror();
+%}
+%token ID NUM
+%left '+' '-'
+%left '*' '/'
+%%
+E : E '+' E | E '-' E | E '*' E | E '/' E | '(' E ')' | ID | NUM;
+%%
+int main(){
+    printf("Enter expression: ");
+    if(!yyparse())
+        printf("Valid Expression\n");
+    return 0;
+}
+int yyerror() {printf("Invalid Expression\n"); return 0;}
+
+YACC specification to check the syntax of while statement for C language with an error detection
+
+LEX
+%{
+#include "parser.tab.h"
+%}
+%%
+"while" { return WHILE; }
+[a-zA-Z]+ { return ID; }
+[0-9]+ { return NUM; }
+"=="|"!="|"<"|">"|"<="|">=" { return RELOP; }
+[(){};] { return yytext[0]; }
+[ \t\n]+ ;
+. { return yytext[0]; }
+%%
+int yywrap() {return 1;}
+
+YACC
+%{
+#include <stdio.h>
+int yylex(void);
+int yyerror();
+%}
+%token WHILE ID NUM RELOP
+%%
+S : WHILE '(' C ')' STMT { printf("Valid while statement\n"); };
+C : ID RELOP ID | ID RELOP NUM | NUM RELOP ID | NUM RELOP NUM;
+STMT : ID ';' | '{' STMT '}';
+%%
+int main(){
+    printf("Enter while statement: ");
+    yyparse();
+    return 0;
+}
+int yyerror() {printf("Invalid while statement\n"); return 0;}
+
+Implement common sub-expression elimination optimization on input quadruples.
+
+#include <stdio.h>
+#include <string.h>
+struct quad {
+    char op[5], a1[10], a2[10], res[10];
+} q[20];
+int main() {
+    int n = 0;
+    printf("Enter quadruples (op arg1 arg2 res), END to stop:\n");
+    while (1) {
+        scanf("%s", q[n].op);
+        if (!strcmp(q[n].op, "END")) break;
+        scanf("%s %s %s", q[n].a1, q[n].a2, q[n].res);
+        n++;
+    }
+    for (int i = 0; i < n; i++)
+        for (int j = i + 1; j < n; j++)
+            if (!strcmp(q[i].op, q[j].op) &&
+                !strcmp(q[i].a1, q[j].a1) &&
+                !strcmp(q[i].a2, q[j].a2)) {
+                for (int k = j + 1; k < n; k++) {
+                    if (!strcmp(q[k].a1, q[j].res))
+                        strcpy(q[k].a1, q[i].res);
+                    if (!strcmp(q[k].a2, q[j].res))
+                        strcpy(q[k].a2, q[i].res);
+                }
+                strcpy(q[j].op, "");
+            }
+    printf("\nOptimized code:\n");
+    printf("Op   Arg1  Arg2  Result\n");
+    for (int i = 0; i < n; i++)
+        if (q[i].op[0])
+            printf("%-4s %-5s %-5s %-5s\n", q[i].op, q[i].a1, q[i].a2, q[i].res);
+}
+
+Implement constant folding and constant propagation optimization on input quadruples.
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+struct quad {
+    char op[5], a1[10], a2[10], res[10];
+} q[20];
+int isnum(char *s) {
+    for (int i = 0; s[i]; i++)
+        if (s[i] < '0' || s[i] > '9') return 0;
+    return 1;
+}
+int main() {
+    int n = 0;
+    printf("Enter quadruples (op arg1 arg2 res), END to stop:\n");
+    while (1) {
+        scanf("%s", q[n].op);
+        if (!strcmp(q[n].op, "END")) break;
+        scanf("%s %s %s", q[n].a1, q[n].a2, q[n].res);
+        n++;
+    }
+    for (int i = 0; i < n; i++) {
+        if (!strcmp(q[i].op, "=") && isnum(q[i].a1)) {
+            for (int j = i + 1; j < n; j++) {
+                if (!strcmp(q[j].a1, q[i].res))
+                    strcpy(q[j].a1, q[i].a1);
+                if (!strcmp(q[j].a2, q[i].res))
+                    strcpy(q[j].a2, q[i].a1);
+            }
+        }
+    }
+    for (int i = 0; i < n; i++) {
+        if (isnum(q[i].a1) && isnum(q[i].a2)) {
+            int x = atoi(q[i].a1);
+            int y = atoi(q[i].a2);
+            int r;
+            if (!strcmp(q[i].op, "+")) r = x + y;
+            else if (!strcmp(q[i].op, "-")) r = x - y;
+            else if (!strcmp(q[i].op, "*")) r = x * y;
+            else if (!strcmp(q[i].op, "/")) r = x / y;
+            else continue;
+            sprintf(q[i].a1, "%d", r);
+            strcpy(q[i].op, "=");
+            strcpy(q[i].a2, "_");
+        }
+    }
+    printf("\nOptimized code:\n");
+    printf("Op   Arg1  Arg2  Result\n");
+    for (int i = 0; i < n; i++)
+        printf("%-4s %-5s %-5s %-5s\n",
+               q[i].op, q[i].a1, q[i].a2, q[i].res);
+}

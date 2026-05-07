@@ -1,6 +1,6 @@
-curl -O https://raw.githubusercontent.com/RubberDucky67/ducky/refs/heads/main/main.cpp
+curl -o AI.py "https://raw.githubusercontent.com/RubberDucky67/ducky/main/AI.py"
 
-cat main.cpp
+cat AI.py
 
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/RubberDucky67/ducky/refs/heads/main/main.cpp" -OutFile "main.cpp"
 

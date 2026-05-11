@@ -1,0 +1,17 @@
+Dept   <- c("A", "A", "B", "B", "C", "C")
+Result <- c("Pass", "Fail", "Pass", "Pass", "Fail", "Pass")
+data <- data.frame(Dept, Result)
+cat("=== Chi-square Test ===\n")
+table_data <- table(data$Dept, data$Result)
+print(table_data)
+chi_test <- chisq.test(table_data)
+print(chi_test)
+data$Result_num <- ifelse(data$Result == "Pass", 1, 0)
+group_A <- data$Result_num[data$Dept == "A"]
+group_B <- data$Result_num[data$Dept == "B"]
+cat("\n=== F-test ===\n")
+f_test <- var.test(group_A, group_B)
+print(f_test)
+cat("\n=== Independent t-test ===\n")
+t_test <- t.test(group_A, group_B)
+print(t_test)

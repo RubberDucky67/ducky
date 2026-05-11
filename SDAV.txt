@@ -1,0 +1,796 @@
+================================================================================
+Q2 - DATA SUMMARIZATION & CLEANING
+================================================================================
+
+CONCEPTS USED
+-------------
+1. Missing value detection and handling
+2. Mean
+3. Median
+4. Mode
+5. Standard Deviation
+6. Variance
+7. Range
+8. Quartiles (Q1, Q2, Q3)
+9. Interquartile Range (IQR)
+10. Coefficient of Variation (CV)
+11. Dataset comparison
+
+--------------------------------------------------------------------------------
+1. MISSING VALUE HANDLING
+--------------------------------------------------------------------------------
+Detection:
+  is.na(x)           -- returns TRUE for each NA element
+  colSums(is.na(df)) -- counts NAs per column
+  complete.cases(df) -- TRUE for rows with no NAs
+
+Removal:
+  df[complete.cases(df), ]  -- keep only complete rows
+  na.omit(df)               -- same result
+
+Imputation (replacing NA with a calculated value):
+  x[is.na(x)] <- mean(x, na.rm=TRUE)    -- mean imputation
+  x[is.na(x)] <- median(x, na.rm=TRUE)  -- median imputation (better for skewed)
+
+  In Diabetes dataset: biologically impossible 0s (e.g., Glucose=0, BMI=0)
+  are first replaced with NA, then imputed with column median.
+
+--------------------------------------------------------------------------------
+2. MEAN (Arithmetic Average)
+--------------------------------------------------------------------------------
+Formula: x̄ = (x1 + x2 + ... + xn) / n = Σ(xi) / n
+
+R function: mean(x, na.rm=TRUE)
+
+- Sum all values, divide by the count.
+- Sensitive to outliers (extreme values pull the mean).
+- Best used when data is roughly symmetric.
+
+--------------------------------------------------------------------------------
+3. MEDIAN
+--------------------------------------------------------------------------------
+Formula:
+  - Sort data in ascending order.
+  - If n is odd:  Median = value at position (n+1)/2
+  - If n is even: Median = average of values at positions n/2 and n/2+1
+
+R function: median(x, na.rm=TRUE)
+
+- Middle value of sorted data.
+- Not affected by outliers.
+- Better than mean for skewed distributions.
+
+--------------------------------------------------------------------------------
+4. MODE
+--------------------------------------------------------------------------------
+Definition: The value that appears most frequently in the dataset.
+
+R has no built-in mode() for statistical mode. Custom function:
+  stat_mode <- function(x) {
+      x  <- x[!is.na(x)]
+      ux <- unique(x)
+      ux[which.max(tabulate(match(x, ux)))]
+  }
+
+Steps:
+  1. Remove NAs.
+  2. Get unique values.
+  3. Count how many times each unique value appears (tabulate + match).
+  4. Return the unique value with the highest count.
+
+--------------------------------------------------------------------------------
+5. STANDARD DEVIATION (Sample SD)
+--------------------------------------------------------------------------------
+Formula: s = sqrt( Σ(xi - x̄)² / (n - 1) )
+
+Steps:
+  1. Calculate mean x̄.
+  2. Subtract mean from each value: (xi - x̄)
+  3. Square each difference: (xi - x̄)²
+  4. Sum all squared differences: Σ(xi - x̄)²
+  5. Divide by (n-1): this is the sample variance.
+  6. Take square root: this is sample SD.
+
+R function: sd(x, na.rm=TRUE)
+
+- Measures spread around the mean.
+- Same units as the original data.
+- Divides by n-1 (not n) for sample SD (Bessel's correction).
+
+--------------------------------------------------------------------------------
+6. VARIANCE (Sample Variance)
+--------------------------------------------------------------------------------
+Formula: s² = Σ(xi - x̄)² / (n - 1)
+
+R function: var(x, na.rm=TRUE)
+
+- Square of standard deviation.
+- Units are squared (e.g., USD²).
+- Relationship: Variance = SD²  /  SD = sqrt(Variance)
+
+--------------------------------------------------------------------------------
+7. RANGE
+--------------------------------------------------------------------------------
+Formula: Range = Maximum - Minimum
+
+R: diff(range(x, na.rm=TRUE))
+   OR: max(x) - min(x)
+
+- Simplest measure of spread.
+- Highly sensitive to outliers.
+
+--------------------------------------------------------------------------------
+8. QUARTILES
+--------------------------------------------------------------------------------
+Definition: Values that divide sorted data into four equal parts.
+
+  Q1 (25th percentile): 25% of data lies below this value.
+  Q2 (50th percentile): Same as median. 50% below.
+  Q3 (75th percentile): 75% of data lies below this value.
+
+R function: quantile(x, c(0.25, 0.5, 0.75), na.rm=TRUE)
+
+Steps for Q1 manually:
+  1. Sort data.
+  2. Find position: L = 0.25 * (n+1)
+  3. If L is integer, Q1 = value at position L.
+  4. If L is decimal, interpolate between adjacent values.
+
+--------------------------------------------------------------------------------
+9. INTERQUARTILE RANGE (IQR)
+--------------------------------------------------------------------------------
+Formula: IQR = Q3 - Q1
+
+R function: IQR(x, na.rm=TRUE)
+
+- Measures spread of the middle 50% of data.
+- Robust to outliers (unlike range).
+- Outlier rule: values < Q1 - 1.5*IQR  or  > Q3 + 1.5*IQR are outliers.
+
+--------------------------------------------------------------------------------
+10. COEFFICIENT OF VARIATION (CV)
+--------------------------------------------------------------------------------
+Formula: CV = (s / x̄) * 100  (expressed as percentage)
+
+R: (sd(x, na.rm=TRUE) / mean(x, na.rm=TRUE)) * 100
+
+- Measures relative variability (spread relative to mean).
+- Unitless - allows comparison of datasets with different units or scales.
+- Higher CV = more variability relative to the mean.
+
+--------------------------------------------------------------------------------
+11. DATASET COMPARISON
+--------------------------------------------------------------------------------
+Compare two datasets using:
+  - Mean: which has higher central tendency?
+  - SD / CV: which is more spread out?
+  - IQR: which has wider middle 50%?
+  - Range: which has more extreme values?
+
+Conclusion format:
+  "Dataset A has higher mean (X) than Dataset B (Y), suggesting ..."
+  "Dataset A has higher CV (X%) indicating more relative variability than B (Y%)"
+
+
+================================================================================
+Q3 - DATA VISUALIZATION
+================================================================================
+
+CONCEPTS USED
+-------------
+1. Histogram
+2. Boxplot
+3. Bar Chart
+4. Pie Chart
+5. Scatter Plot with regression line
+6. Frequency Polygon
+7. Stem-and-Leaf Plot
+
+--------------------------------------------------------------------------------
+1. HISTOGRAM
+--------------------------------------------------------------------------------
+R function: hist(x, col=..., main=..., xlab=..., breaks=...)
+
+- Displays the frequency distribution of a continuous variable.
+- X-axis: value ranges (bins/classes). Y-axis: frequency count.
+- breaks= controls the number of bins.
+- Bars touch each other (unlike bar chart) because data is continuous.
+- Shape reveals: symmetric, left-skewed, right-skewed, bimodal.
+
+--------------------------------------------------------------------------------
+2. BOXPLOT (Box-and-Whisker Plot)
+--------------------------------------------------------------------------------
+R function: boxplot(x, col=..., main=..., ylab=...)
+
+Components:
+  - Box: spans from Q1 to Q3 (the IQR).
+  - Line inside box: Median (Q2).
+  - Whiskers: extend to min/max within 1.5*IQR from box edges.
+  - Points beyond whiskers: outliers.
+
+Five-number summary: Min, Q1, Median, Q3, Max
+R: fivenum(x)
+
+Interpretation: Width of box = spread of middle 50%. Long whiskers = high spread.
+
+--------------------------------------------------------------------------------
+3. BAR CHART
+--------------------------------------------------------------------------------
+R function: barplot(table(x), col=..., main=..., ylab=..., las=2)
+
+- Displays frequency or count of each category.
+- X-axis: categories. Y-axis: count or value.
+- Bars are separated by gaps (unlike histogram).
+- Used for categorical/discrete data.
+- table(x) counts frequency of each category first.
+
+--------------------------------------------------------------------------------
+4. PIE CHART
+--------------------------------------------------------------------------------
+R function: pie(table(x), col=..., main=..., labels=...)
+
+- Displays proportion of each category as a slice of a circle.
+- Each slice angle = (category count / total count) * 360 degrees.
+- Formula: Proportion_i = count_i / Σ(count_j)
+- Best for showing part-to-whole relationships with few categories.
+
+--------------------------------------------------------------------------------
+5. SCATTER PLOT
+--------------------------------------------------------------------------------
+R function: plot(x, y, pch=19, col=..., main=..., xlab=..., ylab=...)
+
+- Shows relationship between two continuous variables.
+- Each point = one observation (x value, y value).
+- Reveals: direction (positive/negative), strength (strong/weak), form (linear).
+
+Regression line added with:
+  abline(lm(y ~ x), col="red", lwd=2)
+  lm(y ~ x) fits the linear model: y = a + bx
+  where a = intercept, b = slope = Σ((xi-x̄)(yi-ȳ)) / Σ((xi-x̄)²)
+
+--------------------------------------------------------------------------------
+6. FREQUENCY POLYGON
+--------------------------------------------------------------------------------
+R: 
+  h <- hist(x, plot=FALSE)
+  plot(h$mids, h$counts, type="l", ...)
+
+- Line graph connecting the midpoints of histogram bars.
+- h$mids = midpoint of each bin. h$counts = frequency of each bin.
+- Shows the shape of distribution as a continuous curve.
+- Useful for comparing two distributions on the same axes.
+
+--------------------------------------------------------------------------------
+7. STEM-AND-LEAF PLOT
+--------------------------------------------------------------------------------
+R function: stem(x)
+
+- Displays distribution while retaining individual values.
+- Stem: leading digit(s). Leaf: trailing digit.
+- Example: value 72 -> stem 7, leaf 2.
+- Read like a sideways histogram but individual values are visible.
+- Interpretation: identify clusters, gaps, skew, outliers.
+
+
+================================================================================
+Q4 - PROBABILITY DISTRIBUTIONS
+================================================================================
+
+CONCEPTS USED
+-------------
+1. Binomial Distribution
+2. Poisson Distribution
+3. Normal Distribution
+4. Chi-squared Distribution
+5. t-Distribution
+6. F-Distribution
+7. Confidence Interval
+
+Given values: p=0.1, n=10, lambda=3, mu=50, sigma=10
+
+--------------------------------------------------------------------------------
+1. BINOMIAL DISTRIBUTION
+--------------------------------------------------------------------------------
+Definition: Models the number of successes in n independent Bernoulli trials,
+each with probability p of success.
+
+Conditions: Fixed n, two outcomes, constant p, independent trials.
+
+PMF Formula: P(X = k) = C(n,k) * p^k * (1-p)^(n-k)
+  where C(n,k) = n! / (k! * (n-k)!)  is the binomial coefficient.
+
+Mean:     E(X) = n * p
+Variance: Var(X) = n * p * (1-p)
+
+For given values (n=10, p=0.1):
+  P(X=2) = C(10,2) * (0.1)^2 * (0.9)^8
+          = 45 * 0.01 * 0.43046721
+          = 0.1937
+
+R function: dbinom(k, size=n, prob=p)
+  dbinom = PMF (exact probability)
+  pbinom = CDF (cumulative probability P(X <= k))
+
+--------------------------------------------------------------------------------
+2. POISSON DISTRIBUTION
+--------------------------------------------------------------------------------
+Definition: Models the number of events occurring in a fixed interval of time
+or space, given an average rate lambda.
+
+PMF Formula: P(X = k) = (e^(-lambda) * lambda^k) / k!
+  where e = 2.71828...
+
+Mean:     E(X) = lambda
+Variance: Var(X) = lambda  (mean equals variance - unique to Poisson)
+
+For given values (lambda=3):
+  P(X=2) = (e^-3 * 3^2) / 2! = (0.0498 * 9) / 2 = 0.224
+
+R function: dpois(k, lambda=lambda)
+  dpois = PMF, ppois = CDF
+
+--------------------------------------------------------------------------------
+3. NORMAL DISTRIBUTION
+--------------------------------------------------------------------------------
+Definition: Continuous, symmetric, bell-shaped distribution. Most natural
+phenomena follow it (Central Limit Theorem).
+
+PDF Formula: f(x) = (1 / (sigma * sqrt(2*pi))) * e^(-(x-mu)^2 / (2*sigma^2))
+
+Parameters: mu = mean (center), sigma = standard deviation (spread).
+
+Standard Normal: Z = (X - mu) / sigma
+  Converts any normal value to standard normal (mean=0, sd=1).
+
+P(X < 60) with mu=50, sigma=10:
+  Z = (60 - 50) / 10 = 1.0
+  P(X < 60) = P(Z < 1.0) = 0.8413
+
+Empirical Rule (68-95-99.7 rule):
+  68% of data within 1 SD of mean.
+  95% of data within 2 SD of mean.
+  99.7% of data within 3 SD of mean.
+
+R function: pnorm(x, mean=mu, sd=sigma)  -- gives P(X < x)
+            dnorm(x, mean=mu, sd=sigma)  -- gives PDF value
+            qnorm(p, mean=mu, sd=sigma)  -- gives x for given probability p
+
+--------------------------------------------------------------------------------
+4. CHI-SQUARED DISTRIBUTION
+--------------------------------------------------------------------------------
+Definition: Distribution of sum of squares of k independent standard normal
+random variables. Used in goodness-of-fit and independence tests.
+
+Parameter: df = degrees of freedom
+
+Shape: Right-skewed. As df increases, approaches normal.
+Mean: df. Variance: 2*df.
+
+R function: dchisq(x, df), pchisq(x, df), qchisq(p, df)
+Critical value at 5% significance: qchisq(0.95, df)
+
+--------------------------------------------------------------------------------
+5. t-DISTRIBUTION
+--------------------------------------------------------------------------------
+Definition: Similar to Normal but with heavier tails. Used when sample size is
+small and population SD is unknown.
+
+Parameter: df = n - 1 (degrees of freedom)
+
+As df increases, t-distribution approaches standard Normal.
+
+R function: dt(x, df), pt(x, df), qt(p, df)
+Two-tailed critical value (5%): qt(0.975, df) gives ~1.96 for large df.
+
+--------------------------------------------------------------------------------
+6. F-DISTRIBUTION
+--------------------------------------------------------------------------------
+Definition: Ratio of two chi-squared distributions divided by their degrees of
+freedom. Used in ANOVA and to compare two variances.
+
+Parameters: df1 = numerator df, df2 = denominator df
+
+F = (s1² / sigma1²) / (s2² / sigma2²)
+Under H0 (equal variances): F = s1² / s2²
+
+R function: df(x, df1, df2), pf(x, df1, df2), qf(p, df1, df2)
+
+--------------------------------------------------------------------------------
+7. CONFIDENCE INTERVAL (95% CI for the Mean)
+--------------------------------------------------------------------------------
+Formula (known sigma, z-based):
+  CI = x̄ ± z* * (sigma / sqrt(n))
+  where z* = 1.96 for 95% confidence
+
+Formula (unknown sigma, t-based):
+  CI = x̄ ± t* * (s / sqrt(n))
+  where t* = qt(0.975, df=n-1)
+
+Steps to calculate:
+  1. Calculate sample mean x̄.
+  2. Find critical value z* (1.96 for 95%) or t*.
+  3. Calculate Standard Error = sigma / sqrt(n)  or  s / sqrt(n)
+  4. Margin of Error = z* * SE
+  5. Lower bound = x̄ - ME
+  6. Upper bound = x̄ + ME
+
+In Q4 code (using given mu=50, sigma=10, n=10):
+  SE = 10 / sqrt(10) = 3.162
+  ME = 1.96 * 3.162 = 6.197
+  CI = [50 - 6.197, 50 + 6.197] = [43.80, 56.20]
+
+Interpretation: We are 95% confident that the true population mean lies within
+this interval.
+
+
+================================================================================
+Q5 - HYPOTHESIS TESTING 1
+================================================================================
+
+CONCEPTS USED
+-------------
+1. Hypothesis testing framework
+2. One-sample t-test
+3. Two-sample t-test
+4. One-way ANOVA with Tukey HSD
+
+--------------------------------------------------------------------------------
+HYPOTHESIS TESTING FRAMEWORK
+--------------------------------------------------------------------------------
+H0 (Null Hypothesis): Assumes no effect / no difference. Default assumption.
+H1 (Alternative Hypothesis): What we want to prove.
+
+Steps:
+  1. State H0 and H1.
+  2. Choose significance level alpha (usually 0.05).
+  3. Calculate test statistic.
+  4. Find p-value.
+  5. Decision: if p-value < alpha -> Reject H0. If p-value >= alpha -> Fail to reject H0.
+
+p-value: Probability of getting results as extreme as observed, assuming H0 is true.
+  Small p-value = strong evidence against H0.
+
+Type I Error (alpha): Rejecting H0 when it is true (false positive).
+Type II Error (beta): Failing to reject H0 when it is false (false negative).
+
+--------------------------------------------------------------------------------
+1. ONE-SAMPLE t-TEST
+--------------------------------------------------------------------------------
+Purpose: Test whether sample mean equals a hypothesised population mean mu0.
+
+H0: mu = mu0
+H1: mu != mu0  (two-tailed)
+
+Test Statistic Formula:
+  t = (x̄ - mu0) / (s / sqrt(n))
+  where x̄ = sample mean, s = sample SD, n = sample size.
+
+Degrees of freedom: df = n - 1
+
+Steps:
+  1. Calculate x̄ and s.
+  2. Calculate t = (x̄ - mu0) / (s / sqrt(n))
+  3. Find p-value from t-distribution with df = n-1.
+  4. If p-value < 0.05: Reject H0.
+
+R function: t.test(x, mu=mu0, alternative="two.sided")
+
+In Q5: Testing if mean salary = 100,000.
+  If p < 0.05: mean salary is significantly different from 100,000.
+
+--------------------------------------------------------------------------------
+2. TWO-SAMPLE t-TEST (Independent Samples)
+--------------------------------------------------------------------------------
+Purpose: Compare means of two independent groups.
+
+H0: mu1 = mu2  (means are equal)
+H1: mu1 != mu2
+
+Test Statistic (Welch's t-test, unequal variances):
+  t = (x̄1 - x̄2) / sqrt(s1²/n1 + s2²/n2)
+
+  where x̄1, x̄2 = group means
+        s1, s2 = group standard deviations
+        n1, n2 = group sample sizes
+
+Degrees of freedom: Welch-Satterthwaite equation (complex; R computes automatically)
+
+Steps:
+  1. Calculate group means and SDs.
+  2. Calculate t statistic.
+  3. Find p-value.
+  4. Decision based on p-value vs alpha.
+
+R function: t.test(group1, group2, var.equal=FALSE, alternative="two.sided")
+  var.equal=FALSE uses Welch's t-test (recommended; does not assume equal variances).
+
+In Q5: Comparing salaries of Senior vs Mid-level employees, or Male vs Female.
+
+--------------------------------------------------------------------------------
+3. ONE-WAY ANOVA (Analysis of Variance)
+--------------------------------------------------------------------------------
+Purpose: Compare means across 3 or more groups simultaneously.
+
+H0: mu1 = mu2 = mu3 = ... (all group means are equal)
+H1: At least one group mean is different.
+
+Principle: Partition total variability into:
+  - Between-group variability (due to group differences)
+  - Within-group variability (due to random error)
+
+F-statistic Formula:
+  F = MS_between / MS_within
+  where:
+    MS_between = SS_between / df_between = SS_between / (k-1)
+    MS_within  = SS_within  / df_within  = SS_within  / (N-k)
+    k = number of groups, N = total observations
+
+  SS_between = Σ ni*(x̄i - x̄grand)²
+  SS_within  = Σ Σ (xij - x̄i)²
+
+If F is large (p < 0.05): At least one group mean is significantly different.
+
+R function: aov(response ~ group, data=df)  followed by summary()
+
+Tukey HSD Post-hoc Test:
+  After significant ANOVA, identifies WHICH specific groups differ.
+  R: TukeyHSD(aov_model)
+  Adjusts for multiple comparisons.
+
+In Q5: ANOVA on salary across education levels or experience levels.
+
+
+================================================================================
+Q6 - HYPOTHESIS TESTING 2
+================================================================================
+
+CONCEPTS USED
+-------------
+1. Chi-square test of independence
+2. F-test (equality of variances)
+3. Independent samples t-test (mean comparison)
+
+Given data:
+  Dept   = (A, A, B, B, C, C)
+  Result = (Pass, Fail, Pass, Pass, Fail, Pass)
+
+--------------------------------------------------------------------------------
+1. CHI-SQUARE TEST OF INDEPENDENCE
+--------------------------------------------------------------------------------
+Purpose: Test whether two categorical variables are independent (no association).
+
+H0: The two variables are independent (no association).
+H1: The two variables are NOT independent (there is an association).
+
+Contingency Table: Cross-tabulation of frequencies of two categorical variables.
+  table(df$Dept, df$Result) in R.
+
+Test Statistic Formula:
+  Chi² = Σ [ (Observed - Expected)² / Expected ]
+  where:
+    Expected_ij = (Row_i Total * Col_j Total) / Grand Total
+
+Steps:
+  1. Build contingency table.
+  2. Calculate expected frequencies.
+  3. Calculate chi-square statistic.
+  4. Degrees of freedom = (rows - 1) * (cols - 1)
+  5. Find p-value from chi-squared distribution.
+  6. If p < 0.05: Reject H0 (variables are NOT independent).
+
+R function: chisq.test(table_data)
+
+Note on small samples: If expected cell frequency < 5, use Fisher's Exact Test:
+  fisher.test(table_data)
+
+In Q6: Testing if Dept and Result (Pass/Fail) are associated.
+  With only 6 observations, expected counts will be < 5 so a warning is expected.
+
+Cramer's V (effect size):
+  V = sqrt(Chi² / (n * (min(rows,cols) - 1)))
+  0 = no association, 1 = perfect association.
+
+Mosaic plot: visual representation of contingency table.
+  mosaicplot(table_data, shade=TRUE)
+
+--------------------------------------------------------------------------------
+2. F-TEST (EQUALITY OF VARIANCES)
+--------------------------------------------------------------------------------
+Purpose: Test whether two populations have equal variances.
+
+H0: sigma1² = sigma2²  (variances are equal)
+H1: sigma1² != sigma2²
+
+Test Statistic Formula:
+  F = s1² / s2²
+  where s1² >= s2² by convention (larger variance in numerator).
+
+Degrees of freedom: df1 = n1 - 1, df2 = n2 - 1.
+
+Steps:
+  1. Calculate sample variances s1² and s2².
+  2. Calculate F = s1² / s2².
+  3. Find p-value from F-distribution.
+  4. If p < 0.05: Reject H0 (variances significantly differ).
+
+R function: var.test(group1, group2)
+
+Important: Run F-test BEFORE independent t-test to decide whether to use
+  var.equal=TRUE (Student's t) or var.equal=FALSE (Welch's t).
+
+In Q6: Testing if variance of pass/fail scores in Dept A = Dept B.
+
+--------------------------------------------------------------------------------
+3. INDEPENDENT t-TEST (COMPARING GROUP MEANS)
+--------------------------------------------------------------------------------
+Purpose: Compare means of two independent groups.
+(Same as Q5 Two-Sample t-test - see Q5 theory above for full detail)
+
+Welch's t Formula:
+  t = (x̄1 - x̄2) / sqrt(s1²/n1 + s2²/n2)
+
+R function: t.test(group1, group2, var.equal=FALSE)
+
+Steps:
+  1. Run F-test to check variance equality.
+  2. Set var.equal based on F-test result.
+  3. Run t.test and interpret p-value.
+
+In Q6: Comparing numeric pass/fail scores (1=Pass, 0=Fail) between departments.
+
+
+================================================================================
+Q7 - CONFIDENCE INTERVALS & TESTS
+================================================================================
+
+CONCEPTS USED
+-------------
+1. Proportion test
+2. Z-test for proportions
+3. t-test (one-sample)
+4. 95% Confidence Interval for proportion and mean
+
+Given: n = 100, successes (x) = 65, p̂ = 65/100 = 0.65
+
+--------------------------------------------------------------------------------
+1. PROPORTION TEST
+--------------------------------------------------------------------------------
+Purpose: Test whether a sample proportion differs significantly from a
+hypothesised value (here p0 = 0.5).
+
+H0: p = 0.5
+H1: p != 0.5
+
+p̂ = x / n = 65 / 100 = 0.65
+
+Test statistic (uses chi-square internally in R):
+  Chi² = (|x - n*p0| - 0.5)² / (n*p0*(1-p0))  [with continuity correction]
+
+R function: prop.test(x, n, p=p0)
+
+Wilson Confidence Interval (prop.test output):
+  More accurate than Wald CI especially for small n or extreme proportions.
+
+Steps:
+  1. Calculate p̂ = x/n.
+  2. Run prop.test().
+  3. Check p-value vs 0.05.
+  4. Read CI from output.
+
+In Q7: p̂ = 0.65. Testing if this is significantly different from 0.5.
+
+--------------------------------------------------------------------------------
+2. Z-TEST FOR PROPORTIONS
+--------------------------------------------------------------------------------
+Purpose: Same as proportion test but uses normal approximation explicitly.
+Valid when n*p >= 5 and n*(1-p) >= 5.
+
+H0: p = p0
+H1: p != p0
+
+Test Statistic Formula:
+  Z = (p̂ - p0) / sqrt(p0*(1-p0)/n)
+
+Steps:
+  1. Calculate p̂ = x/n.
+  2. Calculate SE = sqrt(p0*(1-p0)/n)
+  3. Calculate Z = (p̂ - p0) / SE
+  4. Two-tailed p-value = 2 * (1 - pnorm(|Z|))
+  5. If p < 0.05: Reject H0.
+
+For Q7 values (p̂=0.65, p0=0.5, n=100):
+  SE = sqrt(0.5 * 0.5 / 100) = sqrt(0.0025) = 0.05
+  Z  = (0.65 - 0.5) / 0.05 = 0.15 / 0.05 = 3.0
+  p-value = 2 * (1 - pnorm(3.0)) = 2 * 0.00135 = 0.0027
+
+Since p < 0.05: Reject H0. Proportion is significantly different from 0.5.
+
+R code used:
+  z <- (p_hat - p0) / sqrt((p0*(1-p0))/n)
+  p_value_z <- 2 * (1 - pnorm(abs(z)))
+
+--------------------------------------------------------------------------------
+3. ONE-SAMPLE t-TEST
+--------------------------------------------------------------------------------
+Purpose: Test whether mean of a sample equals a hypothesised value.
+(Full detail in Q5 theory above)
+
+In Q7: The sample is constructed as 65 ones and 35 zeros (binary variable).
+  mean of this sample = 65/100 = 0.65.
+  Testing if true mean = 0.5.
+
+  t = (x̄ - mu0) / (s / sqrt(n))
+
+R function: t.test(sample_data, mu=0.5)
+
+The t-test on a binary (0/1) vector is equivalent to testing the proportion.
+It uses sample SD instead of the theoretical SD, giving slightly different result.
+
+--------------------------------------------------------------------------------
+4. 95% CONFIDENCE INTERVAL FOR PROPORTION (Wald Method)
+--------------------------------------------------------------------------------
+Formula:
+  CI = p̂ ± z* * sqrt(p̂*(1-p̂)/n)
+  where z* = 1.96 for 95% confidence
+
+Steps:
+  1. Calculate p̂ = x/n = 65/100 = 0.65
+  2. z* = 1.96
+  3. SE = sqrt(p̂*(1-p̂)/n) = sqrt(0.65*0.35/100) = sqrt(0.002275) = 0.04770
+  4. Margin of Error = 1.96 * 0.04770 = 0.09349
+  5. Lower = 0.65 - 0.09349 = 0.5565
+  6. Upper = 0.65 + 0.09349 = 0.7435
+  CI = [0.5565, 0.7435]
+
+R code used:
+  z_crit <- 1.96
+  margin <- z_crit * sqrt((p_hat*(1-p_hat))/n)
+  lower  <- p_hat - margin
+  upper  <- p_hat + margin
+
+Interpretation: We are 95% confident the true proportion of successes in the
+population lies between 55.65% and 74.35%.
+
+Wilson CI (from prop.test): slightly different bounds, more accurate,
+recommended for proportions close to 0 or 1, or small n.
+
+Comparison of CI methods:
+  Wald CI:   p̂ ± z*sqrt(p̂(1-p̂)/n)           -- simple, can exceed [0,1]
+  Wilson CI: more complex formula, always within [0,1], better coverage
+
+
+================================================================================
+QUICK REFERENCE: KEY FORMULAS
+================================================================================
+
+Mean:         x̄ = Σxi / n
+Median:       Middle value of sorted data
+Mode:         Most frequent value
+SD (sample):  s = sqrt(Σ(xi-x̄)² / (n-1))
+Variance:     s² = Σ(xi-x̄)² / (n-1)
+Range:        Max - Min
+IQR:          Q3 - Q1
+CV:           (s / x̄) * 100
+
+Binomial PMF: P(X=k) = C(n,k) * p^k * (1-p)^(n-k)
+Poisson PMF:  P(X=k) = (e^-lambda * lambda^k) / k!
+Normal Z:     Z = (X - mu) / sigma
+
+One-sample t: t = (x̄ - mu0) / (s/sqrt(n)),  df = n-1
+Two-sample t: t = (x̄1-x̄2) / sqrt(s1²/n1 + s2²/n2)
+ANOVA F:      F = MS_between / MS_within
+Chi-square:   Chi² = Σ[(O-E)²/E]
+F (variance): F = s1² / s2²
+Z (prop):     Z = (p̂ - p0) / sqrt(p0*(1-p0)/n)
+
+z-CI (mean):  x̄ ± 1.96*(sigma/sqrt(n))
+t-CI (mean):  x̄ ± t*(s/sqrt(n))
+CI (prop):    p̂ ± 1.96*sqrt(p̂(1-p̂)/n)
+CI (var):     [(n-1)s²/chi²_hi, (n-1)s²/chi²_lo]
+
+Decision rule: p-value < 0.05 -> Reject H0 (significant)
+               p-value >= 0.05 -> Fail to reject H0 (not significant)
+
+================================================================================
+END OF SDAV THEORY REFERENCE
+================================================================================

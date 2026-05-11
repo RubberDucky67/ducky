@@ -1,0 +1,292 @@
+# Q2-Titanic_vs_MallCustomers
+titanic <- read.csv("Titanic-Dataset.csv", stringsAsFactors=FALSE)
+mall    <- read.csv("Mall_Customers.csv",   stringsAsFactors=FALSE)
+cat("=== DATASET INFO ===\n")
+cat("Titanic  - Rows:", nrow(titanic), "| Cols:", ncol(titanic), "\n")
+cat("Mall     - Rows:", nrow(mall),    "| Cols:", ncol(mall),    "\n")
+cat("\n=== MISSING VALUES ===\n")
+cat("Titanic missing per column:\n")
+print(colSums(is.na(titanic)))
+cat("Mall missing per column:\n")
+print(colSums(is.na(mall)))
+titanic$Age[is.na(titanic$Age)]   <- median(titanic$Age, na.rm=TRUE)
+titanic$Fare[is.na(titanic$Fare)] <- median(titanic$Fare, na.rm=TRUE)
+titanic <- titanic[!is.na(titanic$Embarked) & titanic$Embarked != "", ]
+cat("\nAfter cleaning - Titanic missing:\n")
+print(colSums(is.na(titanic[, c("Age","Fare","Embarked")])))
+stat_mode <- function(x) { x <- x[!is.na(x)]; ux <- unique(x); ux[which.max(tabulate(match(x,ux)))] }
+desc <- function(x, label) {
+  cat("\n---", label, "---\n")
+  cat("Mean    :", round(mean(x, na.rm=TRUE), 3), "\n")
+  cat("Median  :", median(x, na.rm=TRUE), "\n")
+  cat("Mode    :", stat_mode(x), "\n")
+  cat("SD      :", round(sd(x, na.rm=TRUE), 3), "\n")
+  cat("Variance:", round(var(x, na.rm=TRUE), 3), "\n")
+  cat("Range   :", diff(range(x, na.rm=TRUE)), "\n")
+  cat("Min     :", min(x, na.rm=TRUE), "| Max:", max(x, na.rm=TRUE), "\n")
+  q <- quantile(x, c(0.25, 0.75), na.rm=TRUE)
+  cat("Q1      :", q[1], "| Q3:", q[2], "| IQR:", IQR(x, na.rm=TRUE), "\n")
+}
+cat("\n=== DESCRIPTIVE STATISTICS ===\n")
+desc(titanic$Age,  "Titanic - Age")
+desc(titanic$Fare, "Titanic - Fare")
+desc(mall$Age,                      "Mall - Age")
+desc(mall$`Annual.Income..k..`,     "Mall - Annual Income (k$)")
+desc(mall$`Spending.Score..1.100.`, "Mall - Spending Score")
+cat("\n=== QUARTILES & IQR ===\n")
+for (col in c("Age","Fare")) {
+  q <- quantile(titanic[[col]], na.rm=TRUE)
+  cat("Titanic", col, "- Q1:", q[2], "| Q2:", q[3], "| Q3:", q[4], "| IQR:", IQR(titanic[[col]], na.rm=TRUE), "\n")
+}
+for (col in c("Age","Annual.Income..k..","Spending.Score..1.100.")) {
+  q <- quantile(mall[[col]], na.rm=TRUE)
+  cat("Mall", col, "- Q1:", q[2], "| Q2:", q[3], "| Q3:", q[4], "| IQR:", IQR(mall[[col]], na.rm=TRUE), "\n")
+}
+cat("\n=== COMPARISON & CONCLUSION ===\n")
+cat("Titanic Age   - Mean:", round(mean(titanic$Age),2),  "| SD:", round(sd(titanic$Age),2),  "\n")
+cat("Mall Age      - Mean:", round(mean(mall$Age),2),     "| SD:", round(sd(mall$Age),2),     "\n")
+cat("Titanic Fare  - Mean:", round(mean(titanic$Fare),2), "| SD:", round(sd(titanic$Fare),2), "\n")
+cat("Mall Income   - Mean:", round(mean(mall$`Annual.Income..k..`),2), "| SD:", round(sd(mall$`Annual.Income..k..`),2), "\n")
+cat("Mall Spending - Mean:", round(mean(mall$`Spending.Score..1.100..`),2), "| SD:", round(sd(mall$`Spending.Score..1.100..`),2), "\n")
+cat("\nConclusion:\n")
+cat("- Titanic passengers had mean age", round(mean(titanic$Age),1), "vs Mall customers", round(mean(mall$Age),1), "\n")
+cat("- Titanic Fare has high SD (", round(sd(titanic$Fare),1), ") indicating wide wealth disparity\n")
+cat("- Mall Spending Score SD =", round(sd(mall$`Spending.Score..1.100..`),1), "showing varied customer engagement\n")
+par(mfrow=c(2,3))
+hist(titanic$Age,  col="steelblue", border="white", main="Titanic: Age",      xlab="Age")
+hist(titanic$Fare, col="steelblue", border="white", main="Titanic: Fare",     xlab="Fare")
+hist(mall$Age,                      col="tomato",   border="white", main="Mall: Age",          xlab="Age")
+hist(mall$`Annual.Income..k..`,     col="tomato",   border="white", main="Mall: Annual Income",xlab="Income (k$)")
+hist(mall$`Spending.Score..1.100.`, col="tomato",   border="white", main="Mall: Spending Score",xlab="Score")
+boxplot(titanic$Age, mall$Age, names=c("Titanic Age","Mall Age"), col=c("steelblue","tomato"), main="Age Comparison")
+par(mfrow=c(1,1))
+
+# Q2-SalaryData_vs_DSSalaries
+sal  <- read.csv("Salary Data.csv",   stringsAsFactors=FALSE)
+ds   <- read.csv("ds_salaries.csv",   stringsAsFactors=FALSE)
+cat("=== DATASET INFO ===\n")
+cat("Salary_Data - Rows:", nrow(sal), "| Cols:", ncol(sal), "\n")
+cat("DS Salaries - Rows:", nrow(ds),  "| Cols:", ncol(ds),  "\n")
+print(head(sal, 3))
+print(head(ds[, c("work_year","experience_level","job_title","salary_in_usd","company_size")], 3))
+cat("\n=== MISSING VALUES ===\n")
+cat("Salary_Data missing:\n"); print(colSums(is.na(sal)))
+cat("DS Salaries missing:\n"); print(colSums(is.na(ds)))
+sal <- sal[!is.na(sal$Salary) & !is.na(sal$`Years.of.Experience`), ]
+ds  <- ds[!is.na(ds$salary_in_usd), ]
+cat("After cleaning - no missing values in key columns\n")
+stat_mode <- function(x) { x <- x[!is.na(x)]; ux <- unique(x); ux[which.max(tabulate(match(x,ux)))] }
+desc <- function(x, label) {
+  cat("\n---", label, "---\n")
+  cat("Mean    :", round(mean(x, na.rm=TRUE), 3), "\n")
+  cat("Median  :", median(x, na.rm=TRUE), "\n")
+  cat("Mode    :", stat_mode(x), "\n")
+  cat("SD      :", round(sd(x, na.rm=TRUE), 3), "\n")
+  cat("Variance:", round(var(x, na.rm=TRUE), 3), "\n")
+  cat("Range   :", diff(range(x, na.rm=TRUE)), "\n")
+  cat("Min     :", min(x, na.rm=TRUE), "| Max:", max(x, na.rm=TRUE), "\n")
+  q <- quantile(x, c(0.25, 0.75), na.rm=TRUE)
+  cat("Q1      :", q[1], "| Q3:", q[2], "| IQR:", IQR(x, na.rm=TRUE), "\n")
+}
+cat("\n=== DESCRIPTIVE STATISTICS ===\n")
+desc(sal$Salary,                  "Salary_Data - Salary (USD)")
+desc(sal$`Years.of.Experience`,   "Salary_Data - Years of Experience")
+desc(sal$Age,                     "Salary_Data - Age")
+desc(ds$salary_in_usd,            "DS Salaries - Salary in USD")
+desc(ds$remote_ratio,             "DS Salaries - Remote Ratio")
+cat("\n=== QUARTILES & IQR ===\n")
+for (col in c("Salary","Years.of.Experience","Age")) {
+  q <- quantile(sal[[col]], na.rm=TRUE)
+  cat("Salary_Data", col, "- Q1:", q[2], "| Q2:", q[3], "| Q3:", q[4], "| IQR:", IQR(sal[[col]], na.rm=TRUE), "\n")
+}
+q <- quantile(ds$salary_in_usd, na.rm=TRUE)
+cat("DS Salaries salary_in_usd - Q1:", q[2], "| Q2:", q[3], "| Q3:", q[4], "| IQR:", IQR(ds$salary_in_usd, na.rm=TRUE), "\n")
+cat("\n=== COMPARISON & CONCLUSION ===\n")
+cat("Salary_Data Mean Salary :", round(mean(sal$Salary),2),       "USD | SD:", round(sd(sal$Salary),2), "\n")
+cat("DS Salaries Mean Salary :", round(mean(ds$salary_in_usd),2), "USD | SD:", round(sd(ds$salary_in_usd),2), "\n")
+cat("Salary_Data Median      :", median(sal$Salary), "\n")
+cat("DS Salaries Median      :", median(ds$salary_in_usd), "\n")
+cat("Salary_Data CV          :", round(sd(sal$Salary)/mean(sal$Salary)*100,2), "%\n")
+cat("DS Salaries CV          :", round(sd(ds$salary_in_usd)/mean(ds$salary_in_usd)*100,2), "%\n")
+cat("\nConclusion:\n")
+cat("- DS professionals earn on average", round(mean(ds$salary_in_usd) - mean(sal$Salary),0), "USD more than general salary dataset\n")
+if (sd(ds$salary_in_usd) > sd(sal$Salary)) {
+  cat("- DS Salaries show more spread (SD =", round(sd(ds$salary_in_usd),0), ") indicating higher salary variability by role/experience\n")
+} else {
+  cat("- Salary_Data shows more spread (SD =", round(sd(sal$Salary),0), ")\n")
+}
+cat("- DS salary IQR =", IQR(ds$salary_in_usd), "vs General salary IQR =", IQR(sal$Salary), "\n")
+par(mfrow=c(2,2))
+hist(sal$Salary,       col="steelblue", border="white", main="Salary_Data: Salary",    xlab="USD")
+hist(ds$salary_in_usd, col="tomato",    border="white", main="DS Salaries: Salary USD",xlab="USD")
+boxplot(sal$Salary,       col="steelblue", main="Salary_Data Boxplot",    ylab="USD")
+boxplot(ds$salary_in_usd, col="tomato",    main="DS Salaries Boxplot",    ylab="USD")
+par(mfrow=c(1,1))
+plot(sal$`Years.of.Experience`, sal$Salary, pch=19, col="steelblue",
+     main="Salary_Data: Experience vs Salary", xlab="Years of Experience", ylab="Salary")
+abline(lm(Salary ~ `Years.of.Experience`, data=sal), col="red", lwd=2)
+
+# Q2-OnlineSales_vs_Wholesale
+online    <- read.csv("Online Sales Data.csv",       stringsAsFactors=FALSE)
+wholesale <- read.csv("Wholesale customers data.csv", stringsAsFactors=FALSE)
+cat("=== DATASET INFO ===\n")
+cat("Online Sales - Rows:", nrow(online),    "| Cols:", ncol(online),    "\n")
+cat("Wholesale    - Rows:", nrow(wholesale), "| Cols:", ncol(wholesale), "\n")
+print(head(online[, c("Product.Category","Units.Sold","Unit.Price","Total.Revenue")], 3))
+print(head(wholesale, 3))
+cat("\n=== MISSING VALUES ===\n")
+cat("Online Sales missing:\n");  print(colSums(is.na(online)))
+cat("Wholesale missing:\n");     print(colSums(is.na(wholesale)))
+online    <- online[!is.na(online$Total.Revenue) & !is.na(online$Unit.Price), ]
+wholesale <- wholesale[complete.cases(wholesale), ]
+cat("After cleaning - all rows complete\n")
+stat_mode <- function(x) { x <- x[!is.na(x)]; ux <- unique(x); ux[which.max(tabulate(match(x,ux)))] }
+desc <- function(x, label) {
+  cat("\n---", label, "---\n")
+  cat("Mean    :", round(mean(x, na.rm=TRUE), 3), "\n")
+  cat("Median  :", median(x, na.rm=TRUE), "\n")
+  cat("Mode    :", stat_mode(x), "\n")
+  cat("SD      :", round(sd(x, na.rm=TRUE), 3), "\n")
+  cat("Variance:", round(var(x, na.rm=TRUE), 3), "\n")
+  cat("Range   :", diff(range(x, na.rm=TRUE)), "\n")
+  cat("Min     :", min(x, na.rm=TRUE), "| Max:", max(x, na.rm=TRUE), "\n")
+  q <- quantile(x, c(0.25, 0.75), na.rm=TRUE)
+  cat("Q1      :", q[1], "| Q3:", q[2], "| IQR:", IQR(x, na.rm=TRUE), "\n")
+}
+cat("\n=== DESCRIPTIVE STATISTICS ===\n")
+desc(online$Total.Revenue, "Online Sales - Total Revenue")
+desc(online$Unit.Price,    "Online Sales - Unit Price")
+desc(online$Units.Sold,    "Online Sales - Units Sold")
+desc(wholesale$Fresh,              "Wholesale - Fresh")
+desc(wholesale$Milk,               "Wholesale - Milk")
+desc(wholesale$Grocery,            "Wholesale - Grocery")
+desc(wholesale$Frozen,             "Wholesale - Frozen")
+desc(wholesale$Detergents_Paper,   "Wholesale - Detergents & Paper")
+desc(wholesale$Delicassen,         "Wholesale - Delicassen")
+cat("\n=== QUARTILES & IQR ===\n")
+for (col in c("Total.Revenue","Unit.Price","Units.Sold")) {
+  q <- quantile(online[[col]], na.rm=TRUE)
+  cat("Online", col, "- Q1:", q[2], "| Q2:", q[3], "| Q3:", q[4], "| IQR:", IQR(online[[col]], na.rm=TRUE), "\n")
+}
+for (col in c("Fresh","Milk","Grocery","Frozen")) {
+  q <- quantile(wholesale[[col]], na.rm=TRUE)
+  cat("Wholesale", col, "- Q1:", q[2], "| Q2:", q[3], "| Q3:", q[4], "| IQR:", IQR(wholesale[[col]], na.rm=TRUE), "\n")
+}
+cat("\n=== COMPARISON & CONCLUSION ===\n")
+cat("Online Total Revenue  - Mean:", round(mean(online$Total.Revenue),2),  "| SD:", round(sd(online$Total.Revenue),2),  "\n")
+cat("Wholesale Fresh Spend - Mean:", round(mean(wholesale$Fresh),2),        "| SD:", round(sd(wholesale$Fresh),2),        "\n")
+cat("Wholesale Grocery     - Mean:", round(mean(wholesale$Grocery),2),      "| SD:", round(sd(wholesale$Grocery),2),      "\n")
+cat("Online Revenue CV     :", round(sd(online$Total.Revenue)/mean(online$Total.Revenue)*100,2), "%\n")
+cat("Wholesale Fresh CV    :", round(sd(wholesale$Fresh)/mean(wholesale$Fresh)*100,2), "%\n")
+cat("\nConclusion:\n")
+cat("- Online Sales has", nrow(online), "transactions; Wholesale has", nrow(wholesale), "clients\n")
+cat("- Online Revenue range =", diff(range(online$Total.Revenue)), "showing diverse product price points\n")
+cat("- Wholesale Fresh has the highest mean spend (", round(mean(wholesale$Fresh),0), ") among all product categories\n")
+cat("- Both datasets show high CV (>80%) indicating significant variability in spending/revenue\n")
+par(mfrow=c(2,3))
+hist(online$Total.Revenue,   col="steelblue", border="white", main="Online: Revenue",  xlab="USD")
+hist(online$Unit.Price,      col="steelblue", border="white", main="Online: Unit Price",xlab="USD")
+hist(online$Units.Sold,      col="steelblue", border="white", main="Online: Units Sold",xlab="Units")
+hist(wholesale$Fresh,        col="tomato",    border="white", main="Wholesale: Fresh",  xlab="Spend")
+hist(wholesale$Grocery,      col="tomato",    border="white", main="Wholesale: Grocery",xlab="Spend")
+hist(wholesale$Milk,         col="tomato",    border="white", main="Wholesale: Milk",   xlab="Spend")
+par(mfrow=c(1,1))
+par(mfrow=c(1,2))
+boxplot(online$Total.Revenue, col="steelblue", main="Online Revenue Boxplot",    ylab="USD")
+boxplot(wholesale[, c("Fresh","Milk","Grocery","Frozen")], col=c("tomato","gold","green","skyblue"),
+        main="Wholesale Categories Boxplot", las=2)
+par(mfrow=c(1,1))
+
+# Q2-Happiness_vs_Diabetes
+happy    <- read.csv("2015.csv",   stringsAsFactors=FALSE)
+diabetes <- read.csv("data.csv",   stringsAsFactors=FALSE)
+cat("=== DATASET INFO ===\n")
+cat("World Happiness 2015 - Rows:", nrow(happy),    "| Cols:", ncol(happy),    "\n")
+cat("Diabetes Health Data - Rows:", nrow(diabetes), "| Cols:", ncol(diabetes), "\n")
+print(head(happy[, c("Country","Happiness.Score","Economy..GDP.per.Capita.","Health..Life.Expectancy.")], 3))
+print(head(diabetes, 3))
+cat("\n=== MISSING VALUES ===\n")
+cat("Happiness missing:\n");  print(colSums(is.na(happy)))
+cat("Diabetes missing:\n");   print(colSums(is.na(diabetes)))
+diabetes$Glucose[diabetes$Glucose == 0]           <- NA
+diabetes$BloodPressure[diabetes$BloodPressure == 0] <- NA
+diabetes$BMI[diabetes$BMI == 0]                   <- NA
+diabetes$SkinThickness[diabetes$SkinThickness == 0] <- NA
+diabetes$Insulin[diabetes$Insulin == 0]            <- NA
+cat("\nDiabetes after replacing 0s with NA (zero = biologically impossible):\n")
+print(colSums(is.na(diabetes)))
+for (col in c("Glucose","BloodPressure","BMI","SkinThickness","Insulin")) {
+  diabetes[[col]][is.na(diabetes[[col]])] <- round(median(diabetes[[col]], na.rm=TRUE), 1)
+}
+cat("After median imputation - no missing values remain\n")
+stat_mode <- function(x) { x <- x[!is.na(x)]; ux <- unique(x); ux[which.max(tabulate(match(x,ux)))] }
+desc <- function(x, label) {
+  cat("\n---", label, "---\n")
+  cat("Mean    :", round(mean(x, na.rm=TRUE), 3), "\n")
+  cat("Median  :", median(x, na.rm=TRUE), "\n")
+  cat("Mode    :", stat_mode(x), "\n")
+  cat("SD      :", round(sd(x, na.rm=TRUE), 3), "\n")
+  cat("Variance:", round(var(x, na.rm=TRUE), 3), "\n")
+  cat("Range   :", diff(range(x, na.rm=TRUE)), "\n")
+  cat("Min     :", min(x, na.rm=TRUE), "| Max:", max(x, na.rm=TRUE), "\n")
+  q <- quantile(x, c(0.25, 0.75), na.rm=TRUE)
+  cat("Q1      :", q[1], "| Q3:", q[2], "| IQR:", IQR(x, na.rm=TRUE), "\n")
+}
+cat("\n=== DESCRIPTIVE STATISTICS ===\n")
+desc(happy$Happiness.Score,              "Happiness - Happiness Score")
+desc(happy$Economy..GDP.per.Capita.,     "Happiness - GDP per Capita")
+desc(happy$Health..Life.Expectancy.,     "Happiness - Life Expectancy")
+desc(happy$Freedom,                      "Happiness - Freedom")
+desc(happy$Trust..Government.Corruption.,"Happiness - Trust (Govt Corruption)")
+desc(diabetes$Glucose,                   "Diabetes - Glucose")
+desc(diabetes$BloodPressure,             "Diabetes - Blood Pressure")
+desc(diabetes$BMI,                       "Diabetes - BMI")
+desc(diabetes$Age,                       "Diabetes - Age")
+cat("\n=== QUARTILES & IQR ===\n")
+for (col in c("Happiness.Score","Economy..GDP.per.Capita.","Health..Life.Expectancy.")) {
+  q <- quantile(happy[[col]], na.rm=TRUE)
+  cat("Happiness", col, "- Q1:", q[2], "| Q2:", q[3], "| Q3:", q[4], "| IQR:", IQR(happy[[col]], na.rm=TRUE), "\n")
+}
+for (col in c("Glucose","BloodPressure","BMI","Age")) {
+  q <- quantile(diabetes[[col]], na.rm=TRUE)
+  cat("Diabetes", col, "- Q1:", q[2], "| Q2:", q[3], "| Q3:", q[4], "| IQR:", IQR(diabetes[[col]], na.rm=TRUE), "\n")
+}
+cat("\n=== COMPARISON & CONCLUSION ===\n")
+cat("Happiness Score   - Mean:", round(mean(happy$Happiness.Score),3),          "| SD:", round(sd(happy$Happiness.Score),3), "\n")
+cat("GDP per Capita    - Mean:", round(mean(happy$Economy..GDP.per.Capita.),3),  "| SD:", round(sd(happy$Economy..GDP.per.Capita.),3), "\n")
+cat("Life Expectancy   - Mean:", round(mean(happy$Health..Life.Expectancy.),3),  "| SD:", round(sd(happy$Health..Life.Expectancy.),3), "\n")
+cat("Diabetes Glucose  - Mean:", round(mean(diabetes$Glucose),3),               "| SD:", round(sd(diabetes$Glucose),3), "\n")
+cat("Diabetes BMI      - Mean:", round(mean(diabetes$BMI),3),                   "| SD:", round(sd(diabetes$BMI),3), "\n")
+cat("Diabetes Age      - Mean:", round(mean(diabetes$Age),3),                   "| SD:", round(sd(diabetes$Age),3), "\n")
+cat("\nConclusion:\n")
+cat("- Happiness Score CV =", round(sd(happy$Happiness.Score)/mean(happy$Happiness.Score)*100,2), "% - relatively low variability across countries\n")
+cat("- Diabetes Glucose CV =", round(sd(diabetes$Glucose)/mean(diabetes$Glucose)*100,2), "% - wider spread indicating varied patient conditions\n")
+cat("- Happiness dataset covers", nrow(happy), "countries; Diabetes has", nrow(diabetes), "patient records\n")
+cat("- Both datasets required cleaning: Happiness had no NAs; Diabetes had biologically-impossible 0s imputed\n")
+diab_rate <- round(mean(diabetes$Outcome)*100,1)
+cat("- Diabetes outcome rate in dataset:", diab_rate, "% of patients are diabetic\n")
+par(mfrow=c(2,4))
+hist(happy$Happiness.Score,             col="steelblue", border="white", main="Happiness Score",    xlab="Score")
+hist(happy$Economy..GDP.per.Capita.,    col="steelblue", border="white", main="GDP per Capita",     xlab="GDP")
+hist(happy$Health..Life.Expectancy.,    col="steelblue", border="white", main="Life Expectancy",    xlab="Score")
+hist(happy$Freedom,                     col="steelblue", border="white", main="Freedom",            xlab="Score")
+hist(diabetes$Glucose,                  col="tomato",    border="white", main="Glucose",            xlab="mg/dL")
+hist(diabetes$BloodPressure,            col="tomato",    border="white", main="Blood Pressure",     xlab="mmHg")
+hist(diabetes$BMI,                      col="tomato",    border="white", main="BMI",                xlab="BMI")
+hist(diabetes$Age,                      col="tomato",    border="white", main="Age",                xlab="Years")
+par(mfrow=c(1,1))
+par(mfrow=c(1,2))
+boxplot(happy[, c("Happiness.Score","Economy..GDP.per.Capita.","Health..Life.Expectancy.","Freedom")],
+        col=c("steelblue","cornflowerblue","dodgerblue","skyblue"),
+        main="World Happiness Boxplots", las=2)
+boxplot(diabetes[, c("Glucose","BloodPressure","BMI","Age")],
+        col=c("tomato","coral","salmon","lightsalmon"),
+        main="Diabetes Health Boxplots", las=2)
+par(mfrow=c(1,1))
+plot(happy$Economy..GDP.per.Capita., happy$Happiness.Score, pch=19, col="steelblue",
+     main="GDP per Capita vs Happiness Score", xlab="GDP per Capita", ylab="Happiness Score")
+abline(lm(Happiness.Score ~ Economy..GDP.per.Capita., data=happy), col="red", lwd=2)
+plot(diabetes$BMI, diabetes$Glucose, pch=19,
+     col=ifelse(diabetes$Outcome==1,"tomato","steelblue"),
+     main="BMI vs Glucose (Red=Diabetic)", xlab="BMI", ylab="Glucose")
+legend("topright", legend=c("Diabetic","Non-Diabetic"), col=c("tomato","steelblue"), pch=19)
